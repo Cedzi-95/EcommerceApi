@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 public class Category
 {
-    public int categoryId { get; set; }
+    public int CategoryId { get; set; }
+    [Required]
     public string? CategoryName { get; set; }
     public ICollection<Product>? Products { get; set; }
 }
