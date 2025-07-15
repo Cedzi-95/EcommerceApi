@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 public interface IUserService
 {
@@ -24,14 +25,14 @@ public class UserService : IUserService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<UserEntity>> GetAllAsync()
+    public async Task<IEnumerable<UserEntity>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await userManager.Users.ToListAsync();
     }
 
-    public Task<UserEntity> GetByIdAsync(string userId)
+    public async Task<UserEntity> GetByIdAsync(string userId)
     {
-        throw new NotImplementedException();
+        return await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("User not found");
     }
 
     public Task<LoginResponseDto> LoginUserAsync(LoginRequestDto request)
@@ -39,8 +40,32 @@ public class UserService : IUserService
         throw new NotImplementedException();
     }
 
-    public Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
+    public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
     {
-        throw new NotImplementedException();
+        var user = new UserEntity()
+        {
+            Email = request.Email,
+            UserName = request.UserName,
+            PasswordHash = request.Password
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password!);
+
+        if (!result.Succeeded)
+        {
+            var erromessages = string.Join("; ", result.Errors.Select(e => e.Description));
+            throw new ArgumentException($"Error registering user: {erromessages}");
+        }
+
+        return new RegisterUserResponse()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.UserName
+        };
+
+
+        
+
     }
 }
