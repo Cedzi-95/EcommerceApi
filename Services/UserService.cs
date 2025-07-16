@@ -35,9 +35,31 @@ public class UserService : IUserService
         return await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("User not found");
     }
 
-    public Task<LoginResponseDto> LoginUserAsync(LoginRequestDto request)
+    public async Task<LoginResponseDto> LoginUserAsync(LoginRequestDto request)
     {
-        throw new NotImplementedException();
+        var user = await userManager.FindByEmailAsync(request.Email!);
+        if (user == null)
+        {
+            throw new ArgumentException("user not found");
+        }
+        var result = await signInManager.PasswordSignInAsync(
+            user.UserName!,
+            request.Password!,
+            false,
+            false
+        );
+        if (result.Succeeded)
+        {
+            return new LoginResponseDto()
+            {
+                Email = user.Email,
+                Username = user.UserName
+            };
+        }
+
+        return null!;
+
+        
     }
 
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
