@@ -20,9 +20,16 @@ public class UserService : IUserService
         this.userManager = userManager;
         this.signInManager = signInManager;
     }
-    public Task<UserEntity> DeleteAsync(string userId)
+    public async Task<UserEntity> DeleteAsync(string userId)
     {
-        throw new NotImplementedException();
+        var user = await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("user not found");
+        var result = await userManager.DeleteAsync(user!);
+        if (result.Succeeded)
+        {
+            return null!;
+        }
+        throw new Exception($"Could not delete user {user!.Id}");
+
     }
 
     public async Task<IEnumerable<UserEntity>> GetAllAsync()
@@ -86,8 +93,6 @@ public class UserService : IUserService
             Username = user.UserName
         };
 
-
-        
 
     }
 }
