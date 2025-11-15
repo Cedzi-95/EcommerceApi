@@ -1,5 +1,6 @@
 
 using System.Text;
+using EcommerceApi.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,9 +39,10 @@ public class Program
             };
         });
 
+        builder.Services.AddScoped<AuthHelpers>();
+        
         // Add services to the container.
         builder.Services.AddAuthorization();
-
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 

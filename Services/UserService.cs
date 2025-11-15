@@ -1,10 +1,11 @@
+using EcommerceApi.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 public interface IUserService
 {
     public Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request);
-    public Task<LoginResponseDto> LoginUserAsync(LoginRequestDto request);
+    public Task<string> LoginUserAsync(LoginRequestDto request);
     public Task<IEnumerable<UserEntity>> GetAllAsync();
     public Task<UserEntity> GetByIdAsync(string userId);
     public Task<UserEntity> DeleteAsync(string userId);
@@ -12,11 +13,13 @@ public interface IUserService
 
 public class UserService : IUserService
 {
+    public AuthHelpers authHelpers;
     public UserManager<UserEntity> userManager;
     public SignInManager<UserEntity> signInManager;
 
-    public UserService(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager)
+    public UserService(AuthHelpers authHelpers, UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager)
     {
+        this.authHelpers = authHelpers;
         this.userManager = userManager;
         this.signInManager = signInManager;
     }
@@ -42,31 +45,26 @@ public class UserService : IUserService
         return await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("User not found");
     }
 
-    public async Task<LoginResponseDto> LoginUserAsync(LoginRequestDto request)
+    public async Task<string> LoginUserAsync(LoginRequestDto request)
     {
         var user = await userManager.FindByEmailAsync(request.Email!);
         if (user == null)
         {
             throw new ArgumentException("user not found");
         }
-        var result = await signInManager.PasswordSignInAsync(
-            user.UserName!,
-            request.Password!,
-            false,
-            false
-        );
-        if (result.Succeeded)
+        var result = await signInManager.CheckPasswordSignInAsync(
+    user,
+    request.Password!,
+    false
+);
+        if (!result.Succeeded)
         {
-            return new LoginResponseDto()
-            {
-                Email = user.Email,
-                Username = user.UserName
-            };
+            throw new ArgumentException("Invalid credentials");
         }
+        var token = authHelpers.GenerateJWTToken(user);
+        return token;
 
-        return null!;
 
-        
     }
 
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)

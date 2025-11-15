@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using EcommerceApi.Models; // För SystemUser
+using Microsoft.AspNetCore.Identity;
 
 namespace EcommerceApi.Helpers
 {
@@ -15,12 +15,12 @@ namespace EcommerceApi.Helpers
             _configuration = configuration;
         }
 
-        public string GenerateJWTToken(SystemUser user)
+        public string GenerateJWTToken(IdentityUser user)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             };
 
             var jwtToken = new JwtSecurityToken(
@@ -29,12 +29,17 @@ namespace EcommerceApi.Helpers
                 expires: DateTime.UtcNow.AddDays(30),
                 signingCredentials: new SigningCredentials(
                     new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(_configuration["ApplicationSettings:JWT_Secret"])
+                        Encoding.UTF8.GetBytes(_configuration["ApplicationSettings:JWT_Secret"]!)
                     ),
                     SecurityAlgorithms.HmacSha256Signature)
             );
 
             return new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        }
+
+        internal string GenerateJWTToken(UserEntity user)
+        {
+            throw new NotImplementedException();
         }
     }
 }
