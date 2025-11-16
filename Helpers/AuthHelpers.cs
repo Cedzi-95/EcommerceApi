@@ -15,7 +15,7 @@ namespace EcommerceApi.Helpers
             _configuration = configuration;
         }
 
-        public string GenerateJWTToken(IdentityUser user)
+        public string GenerateJWTToken(UserEntity user)
         {
             var claims = new List<Claim>
             {
@@ -37,9 +37,6 @@ namespace EcommerceApi.Helpers
             return new JwtSecurityTokenHandler().WriteToken(jwtToken);
         }
 
-        internal string GenerateJWTToken(UserEntity user)
-        {
-            throw new NotImplementedException();
-        }
+     
     }
 }

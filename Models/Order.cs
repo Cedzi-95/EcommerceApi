@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 public class Order
-{
-   
+{   
     public int Id { get; set; }
     public DateTime OrderAt { get; set; }
     public double Payment { get; set; }

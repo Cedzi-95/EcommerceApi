@@ -53,10 +53,10 @@ public class UserService : IUserService
             throw new ArgumentException("user not found");
         }
         var result = await signInManager.CheckPasswordSignInAsync(
-    user,
-    request.Password!,
-    false
-);
+            user,
+            request.Password!,
+            false
+            );
         if (!result.Succeeded)
         {
             throw new ArgumentException("Invalid credentials");
