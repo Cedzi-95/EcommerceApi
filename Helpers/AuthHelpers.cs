@@ -9,19 +9,29 @@ namespace EcommerceApi.Helpers
     public class AuthHelpers
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public AuthHelpers(IConfiguration configuration)
+        public AuthHelpers(IConfiguration configuration,
+        UserManager<UserEntity> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
-        public string GenerateJWTToken(UserEntity user)
+        public async Task <string> GenerateJWTToken(UserEntity user)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             };
+
+            // Lägg till roller i token
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
             var jwtToken = new JwtSecurityToken(
                 claims: claims,

@@ -9,19 +9,30 @@ public interface IUserService
     public Task<IEnumerable<UserEntity>> GetAllAsync();
     public Task<UserEntity> GetByIdAsync(string userId);
     public Task<UserEntity> DeleteAsync(string userId);
+    public Task AssignRoleAsync(string userId, string roleName);
 }
+
+
+
+
 
 public class UserService : IUserService
 {
     public AuthHelpers authHelpers;
     public UserManager<UserEntity> userManager;
     public SignInManager<UserEntity> signInManager;
+    public  RoleManager<IdentityRole<Guid>> roleManager;
 
-    public UserService(AuthHelpers authHelpers, UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager)
+
+    public UserService(AuthHelpers authHelpers, 
+    UserManager<UserEntity> userManager,
+     SignInManager<UserEntity> signInManager,
+      RoleManager<IdentityRole<Guid>> roleManager)
     {
         this.authHelpers = authHelpers;
         this.userManager = userManager;
         this.signInManager = signInManager;
+        this.roleManager = roleManager;
     }
     public async Task<UserEntity> DeleteAsync(string userId)
     {
@@ -45,6 +56,7 @@ public class UserService : IUserService
         return await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("User not found");
     }
 
+
     public async Task<string> LoginUserAsync(LoginRequestDto request)
     {
         var user = await userManager.FindByEmailAsync(request.Email!);
@@ -61,11 +73,28 @@ public class UserService : IUserService
         {
             throw new ArgumentException("Invalid credentials");
         }
-        var token = authHelpers.GenerateJWTToken(user);
+        var token =  await authHelpers.GenerateJWTToken(user);
         return token;
 
 
     }
+
+    public async Task AssignRoleAsync(string userId, string roleName)
+{
+    var user = await userManager.FindByIdAsync(userId);
+    if (user == null)
+        throw new ArgumentException("User not found");
+
+    var roleExists = await roleManager.RoleExistsAsync(roleName);
+    if (!roleExists)
+        throw new ArgumentException($"Role '{roleName}' does not exist");
+
+    var result = await userManager.AddToRoleAsync(user, roleName);
+    if (!result.Succeeded)
+        throw new ArgumentException(string.Join(", ", result.Errors.Select(e => e.Description)));
+}
+
+
 
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
     {
@@ -83,6 +112,11 @@ public class UserService : IUserService
             var erromessages = string.Join("; ", result.Errors.Select(e => e.Description));
             throw new ArgumentException($"Error registering user: {erromessages}");
         }
+
+        // Ge nya användare "User" rollen
+    await userManager.AddToRoleAsync(user, "User");
+
+    var token = await authHelpers.GenerateJWTToken(user); 
 
         return new RegisterUserResponse()
         {

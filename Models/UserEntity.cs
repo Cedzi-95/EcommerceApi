@@ -35,3 +35,8 @@ public class LoginResponseDto
     public string? Email { get; set; }
 
 }
+
+public class AssignRoleDto
+{
+    public string RoleName { get; set; } = string.Empty;
+}
