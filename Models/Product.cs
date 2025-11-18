@@ -1,19 +1,30 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection.Metadata;
 
 public class Product
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
     [Required]
-    public string? ProductName { get; set; }
+    [MaxLength(200)]
+    public string ProductName { get; set; } = string.Empty;
     [Required]
-    public string? Description { get; set; }
+    [MaxLength(2000)]
+    public string Description { get; set; } = string.Empty;
     [Required]
-    public double Price { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+    public decimal Price { get; set; }
     [Required]
-    public bool IsAvailable { get; set; }
+    [Range(0, int.MaxValue, ErrorMessage ="Stock can't have negative value")]
+    public bool IsAvailable { get; set; } = true;
     [ForeignKey("CategoryId")]
-    public string? CategoryId { get; set; }
+    public int StockQuantity { get; set; }
+    public Guid CategoryId { get; set; }
     public Category? Category { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
 }
