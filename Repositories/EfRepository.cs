@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class EfRepository<T> : IRepository<T> where T : class
 {
-    private readonly  AppDbContext _context;
+    protected readonly  AppDbContext _context;
     public EfRepository(AppDbContext context)
     {
         _context = context;

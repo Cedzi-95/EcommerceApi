@@ -8,7 +8,7 @@ public class Product
     public Guid Id { get; set; }
     [Required]
     [MaxLength(200)]
-    public string ProductName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     [Required]
     [MaxLength(2000)]
     public string Description { get; set; } = string.Empty;

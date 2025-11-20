@@ -10,7 +10,8 @@ public interface IProductRepository : IRepository<Product>
     Task UpdateStockAsync(Guid productId, int amount);
     Task<IEnumerable<Product>> GetPagedAsync(int pageNumber, int pageSize);
     Task<IEnumerable<Product>> GetRelatedProductsAsync(Guid productId, int count);
-
+    Task<(IEnumerable<Product> Products, int TotalCount)>
+GetFilteredPagedAsync(string? search, Guid? categoryId, int page, int pageSize);
 
 
 }

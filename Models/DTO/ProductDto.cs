@@ -4,7 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 
 public class AddProductDto
 {
-    public string ProductName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     [Required]
     [MaxLength(2000)]
     public string Description { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ public class AddProductDto
 
 public class UpdateProductDto
 {
-     public string ProductName { get; set; } = string.Empty;
+     public string Name { get; set; } = string.Empty;
     [Required]
     [MaxLength(2000)]
     public string Description { get; set; } = string.Empty;
