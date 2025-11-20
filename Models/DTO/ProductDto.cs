@@ -17,12 +17,11 @@ public class AddProductDto
     public int StockQuantity { get; set; }
     [Required]
     public string? CategoryId { get; set; }
-
 }
 
 public class UpdateProductDto
 {
-    public string ProductName { get; set; } = string.Empty;
+     public string ProductName { get; set; } = string.Empty;
     [Required]
     [MaxLength(2000)]
     public string Description { get; set; } = string.Empty;
@@ -36,13 +35,20 @@ public class UpdateProductDto
     [Required]
     public bool IsAvailable { get; set; } = true;
     public string? CategoryId { get; set; }
+}
 
-
+public class ProductImageDto
+{
+    public Guid Id { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public string AltText { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+    public bool IsPrimary { get; set; } = false;
 }
 
 public class ProductResponseDto
 {
-    public Guid ProductId { get; set; }
+    public Guid Id { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
@@ -51,6 +57,7 @@ public class ProductResponseDto
     public Guid CategoryId { get; set; }
     public DateTime CreatedAt { get; set; } 
     public DateTime? UpdatedAt { get; set; }
+    public ICollection<ProductImageDto> Images { get; set; } = new List<ProductImageDto>();
 
 
 }

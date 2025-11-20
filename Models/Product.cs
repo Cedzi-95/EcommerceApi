@@ -5,7 +5,7 @@ using System.Reflection.Metadata;
 
 public class Product
 {
-    public Guid ProductId { get; set; }
+    public Guid Id { get; set; }
     [Required]
     [MaxLength(200)]
     public string ProductName { get; set; } = string.Empty;
@@ -27,4 +27,17 @@ public class Product
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
+}
+
+public class ProductImage
+{
+    public Guid Id { get; set; }
+    public Guid ProductId { get; set; }
+    public Product? Product { get; set; } 
+    public string ImageUrl { get; set; } = string.Empty;
+    public string AltText { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+    public bool IsPrimary { get; set; } = false;
+
+
 }
