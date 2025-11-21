@@ -16,7 +16,7 @@ public class AddProductDto
     [Range(0, int.MaxValue, ErrorMessage = "Stock can't have negative value")]
     public int StockQuantity { get; set; }
     [Required]
-    public string? CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
 }
 
 public class UpdateProductDto

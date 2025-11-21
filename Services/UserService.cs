@@ -18,10 +18,10 @@ public interface IUserService
 
 public class UserService : IUserService
 {
-    public AuthHelpers authHelpers;
-    public UserManager<UserEntity> userManager;
-    public SignInManager<UserEntity> signInManager;
-    public  RoleManager<IdentityRole<Guid>> roleManager;
+    private readonly AuthHelpers authHelpers;
+    private readonly UserManager<UserEntity> userManager;
+    private readonly SignInManager<UserEntity> signInManager;
+    private readonly  RoleManager<IdentityRole<Guid>> roleManager;
 
 
     public UserService(AuthHelpers authHelpers, 
