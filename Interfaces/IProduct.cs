@@ -13,5 +13,16 @@ public interface IProductRepository : IRepository<Product>
     Task<(IEnumerable<Product> Products, int TotalCount)>
 GetFilteredPagedAsync(string? search, Guid? categoryId, int page, int pageSize);
 
+}
 
+
+public interface IProductService
+{
+    Task<ProductResponseDto> AddAsync(AddProductDto addProductDto);
+    Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync();
+    Task<ProductResponseDto> GetProductByIdAsync(Guid productId);
+    Task<Product> UpdateAsync(UpdateProductDto updateProductDto);
+    Task<Product> DeleteAsync(Guid productId);
+    Task<bool> SoftDeleteAsync(Guid productId);
+    Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId);
 }
