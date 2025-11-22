@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 [Microsoft.AspNetCore.Mvc.Route("user")]
 public class UserController : ControllerBase
 {
-    public IUserService userService;
+    private readonly IUserService userService;
 
     public UserController(IUserService userService)
     {

@@ -1,30 +1,55 @@
 
 public class ProductService : IProductService
 {
-   private readonly IProductRepository _productRepository;
-   private readonly ICategoryRepository _categoryService;
+    private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryService;
+    private readonly ILogger<ProductService> _logger;
 
     public ProductService(IProductRepository productRepository,
-     ICategoryRepository categoryService)
+     ICategoryRepository categoryService,
+     ILogger<ProductService> logger)
     {
         _productRepository = productRepository;
         _categoryService = categoryService;
+        _logger = logger;
     }
+
+
     public async Task<ProductResponseDto> AddAsync(AddProductDto addProductDto)
     {
-         var product = new Product();
-         var result = _productRepository.AddAsync(product);
-         return new ProductResponseDto
-         {
-             ProductName = addProductDto.Name,
-             Description = addProductDto.Description,
-             Price = addProductDto.Price,
-             StockQuantity = addProductDto.StockQuantity,
-             CategoryId = addProductDto.CategoryId,
-         };
-         
-         
-        
+        try
+        {
+            var category = await _categoryService.GetByIdAsync(addProductDto.CategoryId);
+        if (category == null)
+        {
+            _logger.LogWarning("Attempted to create product with non-existent category {CategoryId}", 
+            addProductDto.CategoryId);
+            throw new ArgumentException($"Category {addProductDto.CategoryId} does not exist.");
+        }
+
+        var product = new Product();
+        await _productRepository.AddAsync(product);
+
+        _logger.LogInformation("Created product {productId} in category {CategoryId}"
+        , product.Id, addProductDto.CategoryId);
+
+        return new ProductResponseDto
+        {
+            Id = product.Id,
+            ProductName = addProductDto.Name,
+            Description = addProductDto.Description,
+            Price = addProductDto.Price,
+            StockQuantity = addProductDto.StockQuantity,
+            IsAvailable = true,
+            CategoryId = addProductDto.CategoryId,
+            CreatedAt = DateTime.UtcNow,
+        };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to add product {productName}", addProductDto.Name);
+            throw;
+        }
     }
 
     public Task<ProductResponseDto> DeleteAsync(Guid productId)
