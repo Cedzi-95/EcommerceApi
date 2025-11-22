@@ -2,11 +2,11 @@
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
-    private readonly ICategoryRepository _categoryService;
+    private readonly CategoryService _categoryService;
     private readonly ILogger<ProductService> _logger;
 
     public ProductService(IProductRepository productRepository,
-     ICategoryRepository categoryService,
+     CategoryService categoryService,
      ILogger<ProductService> logger)
     {
         _productRepository = productRepository;
