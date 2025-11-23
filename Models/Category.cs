@@ -12,7 +12,7 @@ public class Category
     public string? ImageUrl { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; }
-    public Guid ParentId { get; set; } 
+    public Guid? ParentId { get; set; } 
     public Category? Parent { get; set; }
     public ICollection<Category>? Children { get; set; }
     public ICollection<Product>? Products { get; set; }

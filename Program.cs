@@ -55,6 +55,11 @@ public class Program
 
         builder.Services.AddScoped<AuthHelpers>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.Services.AddScoped<CategoryService>();
+        builder.Services.AddScoped<IProductRepository, ProductRepository>();
+        builder.Services.AddScoped<ProductService>();
+
 
         builder.Services.AddControllers();
         // Add services to the container.
