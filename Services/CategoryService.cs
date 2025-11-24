@@ -13,42 +13,33 @@ public class CategoryService
         _logger = logger;
     }
 
-    public async Task<CategoryResponseDto> CreateAsync(CategoryDto request)
+    public async Task<Category> CreateAsync(Category category)
     {
         try
         {
-            var category = new Category();
-        await _categoryRepository.AddAsync(category);
-        _logger.LogInformation("Created new category {categoryName} {categoryId}", category.Id, category.CategoryName);
-
-        return new CategoryResponseDto
+            // Category-objektet kommer redan färdigt från controller
+            await _categoryRepository.AddAsync(category);
+            _logger.LogInformation("Created new category {categoryName} {categoryId}", 
+                category.CategoryName, category.Id);
+            
+            return category;
+        }
+        catch (Exception ex)
         {
-            Id = category.Id,
-            CategoryName = request.CategoryName,
-            Description = request.Description,
-            Slug = request.Slug,
-            ImageUrl = category.ImageUrl
-        };
-        } catch(Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create new category {categoryName}", request.CategoryName);
+            _logger.LogError(ex, "Failed to create new category {categoryName}", 
+                category.CategoryName);
             throw;
         }
     }
 
-    public async Task<IEnumerable<CategoryResponseDto>> GetAllAsync()
+    public async Task<IEnumerable<Category>> GetAllAsync()
     {
         try
         {
-            var result= _categoryRepository.GetAllAsync();
-        if (result == null)
-        {
-            _logger.LogError ("Failed to fetch categories");
-            throw new ArgumentException ("No categories were found");
-        }
-
+            var result = await _categoryRepository.GetCategoriesAsync();
+       
         
-        return (IEnumerable<CategoryResponseDto>)await result;
+        return  result ?? new List<Category>();
         } 
         catch (Exception ex)
         {

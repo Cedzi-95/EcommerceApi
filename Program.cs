@@ -52,6 +52,9 @@ public class Program
 
             };
         });
+        
+        //for mapping
+        builder.Services.AddAutoMapper(typeof(MappingProfile));
 
         builder.Services.AddScoped<AuthHelpers>();
         builder.Services.AddScoped<IUserService, UserService>();

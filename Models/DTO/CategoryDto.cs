@@ -11,7 +11,9 @@ public class CategoryDto
     [Required]
     [MaxLength(200)]
     public string Slug { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
     public Guid? ParentId { get; set; }
+
 
 
 }
@@ -23,6 +25,7 @@ public class CategoryResponseDto
     public string Description { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
+    public Guid? ParentId { get; set; }
     public ICollection<CategoryResponseDto>? Children { get; set; }
 
 }
