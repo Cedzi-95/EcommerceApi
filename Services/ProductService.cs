@@ -57,9 +57,11 @@ public class ProductService : IProductService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync()
+    public async Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync()
     {
-        throw new NotImplementedException();
+       var products = await _productRepository.GetAllAsync() ?? throw new ArgumentException("Products not found");
+       _logger.LogInformation("Fetched all products");
+       return (IEnumerable<ProductResponseDto>)products;
     }
 
     public Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId)
@@ -77,9 +79,12 @@ public class ProductService : IProductService
         throw new NotImplementedException();
     }
 
-    public Task<ProductResponseDto> GetProductByIdAsync(Guid productId)
+    public async Task<Product> GetProductByIdAsync(Guid productId)
     {
-        throw new NotImplementedException();
+        var product = await _productRepository.GetByIdAsync(productId)
+         ?? throw new ArgumentException($"Product {productId} wasnt found");
+         _logger.LogInformation("Fetch product {Id}", product.Id);
+         return product;
     }
 
     public Task<IEnumerable<ProductResponseDto>> SearchAync(string Keyword)

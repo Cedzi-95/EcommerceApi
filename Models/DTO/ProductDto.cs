@@ -4,6 +4,8 @@ using System.Security.Cryptography.X509Certificates;
 
 public class AddProductDto
 {
+    [Required]
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
     [Required]
     [MaxLength(2000)]

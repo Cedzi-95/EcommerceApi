@@ -66,4 +66,19 @@ public class CategoryController : ControllerBase
         }
     }
 
+    [HttpDelete("delete/{id}")]
+    public async Task<IActionResult> DeleteAsync(Guid id)
+    {
+        var entity = await _categoryService.GetByIdAsync(id);
+        if (entity == null)
+        {
+            _logger.LogError($"Category {id} couldn't be found.");
+            return NotFound();
+        }
+
+        var result = await _categoryService.DeleteAsynx(entity); 
+        _logger.LogInformation("Category {entity.Id} has been deleted", entity.Id);    
+        return Ok(result);  
+    }
+
 }

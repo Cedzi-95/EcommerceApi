@@ -19,7 +19,7 @@ public interface IProductRepository : IRepository<Product>
 public interface IProductService
 {
     Task<ProductResponseDto> AddAsync(AddProductDto addProductDto);
-    Task<ProductResponseDto> GetProductByIdAsync(Guid productId);
+    Task<Product> GetProductByIdAsync(Guid productId);
     Task<ProductResponseDto> UpdateAsync(UpdateProductDto updateProductDto);
     Task<ProductResponseDto> DeleteAsync(Guid productId);
     Task<bool> SoftDeleteAsync(Guid productId);

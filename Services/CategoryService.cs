@@ -52,4 +52,11 @@ public class CategoryService
     {
         return await _categoryRepository.GetSingleCategoryAsync(categoryId);
     }
+
+    public async Task<Category> DeleteAsynx(Category category)
+    {
+         await _categoryRepository.DeleteAsync(category);
+         return category;
+    }
+
 }
