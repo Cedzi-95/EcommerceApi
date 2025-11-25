@@ -50,6 +50,6 @@ public class CategoryService
 
     public async Task<Category?> GetByIdAsync(Guid categoryId)
     {
-        return await _categoryRepository.GetByIdAsync(categoryId);
+        return await _categoryRepository.GetSingleCategoryAsync(categoryId);
     }
 }

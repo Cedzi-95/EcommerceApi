@@ -17,4 +17,14 @@ public class CategoryRepository : EfRepository<Category>, ICategoryRepository
         
         return categories;
     }
+
+    public async Task<Category?> GetSingleCategoryAsync(Guid id)
+    {
+      return await _context.Set<Category>()
+      .Where(c => c.Id == id)
+      .Include(c => c.Children!)
+      .ThenInclude(c => c.Children)
+      .FirstOrDefaultAsync();
+        
+    }
 }
