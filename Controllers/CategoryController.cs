@@ -37,20 +37,33 @@ public class CategoryController : ControllerBase
     [HttpGet("all")]
     public async Task<IActionResult> GetAllAsync()
     {
-        var result = await _categoryService.GetAllAsync();
-        
-        var response = result.Select(c => new CategoryResponseDto
+      try
         {
-            Id = c.Id,
-            CategoryName = c.CategoryName,
-            Description = c.Description,
-            Slug = c.Slug,
-            ImageUrl = c.ImageUrl,
-            ParentId = c.ParentId,
-            Children = []
-        });
+            var result = await _categoryService.GetAllAsync();
+            var response = _mapper.Map<List<CategoryResponseDto>>(result);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "failed to fetch categories");
+            throw;
+        }
+    }
 
-        return Ok(response);
+    [HttpGet("{categoryId}")]
+    public async Task<IActionResult> GetByIdAsync(Guid categoryId)
+    {
+        try
+        {
+            var result = await _categoryService.GetByIdAsync(categoryId);
+            var response = _mapper.Map<CategoryResponseDto>(result);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch this category");
+            throw;
+        }
     }
 
 }

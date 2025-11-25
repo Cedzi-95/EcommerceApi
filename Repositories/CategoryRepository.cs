@@ -9,7 +9,10 @@ public class CategoryRepository : EfRepository<Category>, ICategoryRepository
     public async Task<IEnumerable<Category>> GetCategoriesAsync()
     {
         var categories = await _context.Categories
-        .Include(c => c.Children)
+        .Where(c => c.ParentId == null)
+        .Include(c => c.Children!)
+        .ThenInclude(c => c.Children!)
+        .ThenInclude(c => c.Children)
         .ToListAsync();
         
         return categories;
