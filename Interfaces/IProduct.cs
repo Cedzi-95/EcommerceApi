@@ -20,8 +20,9 @@ public interface IProductService
 {
     Task<ProductResponseDto> AddAsync(AddProductDto addProductDto);
     Task<Product> GetProductByIdAsync(Guid productId);
+     Task<IEnumerable<Product>> GetAllProductsAsync();
     Task<ProductResponseDto> UpdateAsync(UpdateProductDto updateProductDto);
-    Task<ProductResponseDto> DeleteAsync(Guid productId);
+    Task<Product> DeleteAsync(Product product);
     Task<bool> SoftDeleteAsync(Guid productId);
     Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId);
     Task<IEnumerable<ProductResponseDto>> SearchAync(string Keyword);

@@ -32,17 +32,7 @@ public class ProductService : IProductService
             throw new ArgumentException($"Category {addProductDto.CategoryId} does not exist.");
         }
 
-        var product = new Product
-        {
-            Name = addProductDto.Name,
-            Description = addProductDto.Description,
-            Price = addProductDto.Price,
-            StockQuantity = addProductDto.StockQuantity,
-            IsAvailable = true,
-            CreatedAt = DateTime.UtcNow,
-            CategoryId = addProductDto.CategoryId         
-        };
-
+        var product = _mapper.Map<Product>(addProductDto);
         await _productRepository.AddAsync(product);
         _logger.LogInformation("Added new product {product.Id}, {product.Name} in category {category.Id}",
          product.Id, product.Name, category.Id);
@@ -57,16 +47,18 @@ public class ProductService : IProductService
         }
     }
 
-    public Task<ProductResponseDto> DeleteAsync(Guid productId)
+    public async Task<Product> DeleteAsync(Product product)
     {
-        throw new NotImplementedException();
+       await _productRepository.DeleteAsync(product);
+       _logger.LogInformation("Deleted product successfully");
+      return product;
     }
 
-    public async Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync()
+    public async Task<IEnumerable<Product>> GetAllProductsAsync()
     {
        var products = await _productRepository.GetAllAsync() ?? throw new ArgumentException("Products not found");
        _logger.LogInformation("Fetched all products");
-       return (IEnumerable<ProductResponseDto>)products;
+       return products;
     }
 
     public Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId)
