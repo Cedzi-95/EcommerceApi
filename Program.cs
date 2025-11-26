@@ -61,7 +61,7 @@ public class Program
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         builder.Services.AddScoped<CategoryService>();
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
-        builder.Services.AddScoped<ProductService>();
+        builder.Services.AddScoped<IProductService, ProductService>();
 
 
         builder.Services.AddControllers();

@@ -4,7 +4,7 @@ public interface ICategoryRepository : IRepository<Category>
     Task<Category?> GetSingleCategoryAsync(Guid id);
 }
 
-public interface ICategoryService
-{
+// public interface ICategoryService
+// {
     
-}
+// }

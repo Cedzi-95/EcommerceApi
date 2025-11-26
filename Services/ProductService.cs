@@ -1,17 +1,22 @@
 
+using AutoMapper;
+
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
     private readonly CategoryService _categoryService;
     private readonly ILogger<ProductService> _logger;
+    private readonly IMapper _mapper;
 
     public ProductService(IProductRepository productRepository,
      CategoryService categoryService,
-     ILogger<ProductService> logger)
+     ILogger<ProductService> logger,
+     IMapper mapper)
     {
         _productRepository = productRepository;
         _categoryService = categoryService;
         _logger = logger;
+        _mapper = mapper;
     }
 
 
@@ -27,23 +32,23 @@ public class ProductService : IProductService
             throw new ArgumentException($"Category {addProductDto.CategoryId} does not exist.");
         }
 
-        var product = new Product();
-        await _productRepository.AddAsync(product);
-
-        _logger.LogInformation("Created product {productId} in category {CategoryId}"
-        , product.Id, addProductDto.CategoryId);
-
-        return new ProductResponseDto
+        var product = new Product
         {
-            Id = product.Id,
-            ProductName = addProductDto.Name,
+            Name = addProductDto.Name,
             Description = addProductDto.Description,
             Price = addProductDto.Price,
             StockQuantity = addProductDto.StockQuantity,
             IsAvailable = true,
-            CategoryId = addProductDto.CategoryId,
             CreatedAt = DateTime.UtcNow,
+            CategoryId = addProductDto.CategoryId         
         };
+
+        await _productRepository.AddAsync(product);
+        _logger.LogInformation("Added new product {product.Id}, {product.Name} in category {category.Id}",
+         product.Id, product.Name, category.Id);
+
+       var response = _mapper.Map<ProductResponseDto>(product);
+       return response;
         }
         catch (Exception ex)
         {
