@@ -61,9 +61,13 @@ public class ProductService : IProductService
        return products;
     }
 
-    public Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId)
+    public async Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId)
     {
-        throw new NotImplementedException();
+        // var category = _categoryService.GetByIdAsync(categoryId) ?? throw new ArgumentException($"Category {categoryId} wasn't found.");
+        var products = await _productRepository.GetProductsByCategoryAsync(categoryId);
+        _logger.LogInformation("Fetch products from category {categoryId}", categoryId);
+        return products;
+
     }
 
     public Task<IEnumerable<ProductResponseDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)

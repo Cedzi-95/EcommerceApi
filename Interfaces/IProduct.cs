@@ -1,6 +1,6 @@
 public interface IProductRepository : IRepository<Product>
 {
-    Task<IEnumerable<Product>> GetProductsByCategoryAsynx(Guid categoryId);
+    Task<IEnumerable<Product>> GetProductsByCategoryAsync(Guid categoryId);
     Task<IEnumerable<Product>> SearchAync(string Keyword);
     Task<IEnumerable<Product>> GetActiveProductsAsync();
     Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice);
@@ -24,7 +24,7 @@ public interface IProductService
     Task<ProductResponseDto> UpdateAsync(UpdateProductDto updateProductDto);
     Task<Product> DeleteAsync(Product product);
     Task<bool> SoftDeleteAsync(Guid productId);
-    Task<IEnumerable<ProductResponseDto>> GetByCategoryAsync(Guid categoryId);
+    Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId);
     Task<IEnumerable<ProductResponseDto>> SearchAync(string Keyword);
     Task<(IEnumerable<ProductResponseDto> Products, int TotalCount)>GetFilteredPagedAsync
     (string? search, Guid? categoryId, int page, int pageSize);

@@ -37,7 +37,7 @@ public class ProductRepository : EfRepository<Product>, IProductRepository
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<Product>> GetProductsByCategoryAsynx(Guid categoryId)
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(Guid categoryId)
     {
         return await _context.Set<Product>()
         .Where(p => p.CategoryId == categoryId)

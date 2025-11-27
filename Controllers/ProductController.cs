@@ -64,7 +64,7 @@ public class ProductController : ControllerBase
         try
        { 
         var product = await _productService.GetProductByIdAsync(id);
-        _logger.LogInformation("Fethed product {product.Id}", product.Id);
+        _logger.LogInformation("Fetched product {product.Id}", product.Id);
         var response = _mapper.Map<ProductResponseDto>(product);
         return Ok(response);
         } catch (Exception ex)
@@ -96,6 +96,29 @@ public class ProductController : ControllerBase
         } catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to delete product");
+            throw;
+        }
+    }
+
+    [HttpGet("category/{id}")]
+    public async Task<IActionResult> GetByCategory(Guid id)
+    {
+        try 
+        {
+         var categoryExist = await _categoryService.GetByIdAsync(id);
+        if (categoryExist == null)
+        {
+            _logger.LogError($"Category {id} does not exist");
+            return NotFound();
+        }
+        var products = await _productService.GetByCategoryAsync(id);
+        _logger.LogInformation("Fetch products from category {id}", id);
+        var response = _mapper.Map<List<ProductResponseDto>>(products);
+        return Ok(response);
+        
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch products from category {id}", id);
             throw;
         }
     }
