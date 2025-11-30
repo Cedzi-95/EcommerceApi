@@ -28,8 +28,15 @@ public class MappingProfile : Profile
         CreateMap<AddProductDto, Product>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
 
+
+        //  CreateMap<Product, UpdateProductDto>();
+        //  CreateMap<UpdateProductDto, Product>()
+        //  .ForMember(dest => dest.Id, opt => opt.Ignore());   
+
         CreateMap<Product, ProductResponseDto>()
-.ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name));
+        .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
+        CreateMap<Product, ProductResponseDto>();  
     }
+
 
 }

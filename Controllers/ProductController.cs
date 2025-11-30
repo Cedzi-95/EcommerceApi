@@ -47,27 +47,29 @@ public class ProductController : ControllerBase
     {
         try
         {
-        var products = await _productService.GetAllProductsAsync();
-        _logger.LogInformation("Fetched all products");
-        var response = _mapper.Map<List<ProductResponseDto>>(products);
-        return Ok(response);
-        } catch (Exception ex)
+            var products = await _productService.GetAllProductsAsync();
+            _logger.LogInformation("Fetched all products");
+            var response = _mapper.Map<List<ProductResponseDto>>(products);
+            return Ok(response);
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch products");
             throw;
         }
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetByIdAsync(Guid id)
     {
         try
-       { 
-        var product = await _productService.GetProductByIdAsync(id);
-        _logger.LogInformation("Fetched product {product.Id}", product.Id);
-        var response = _mapper.Map<ProductResponseDto>(product);
-        return Ok(response);
-        } catch (Exception ex)
+        {
+            var product = await _productService.GetProductByIdAsync(id);
+            _logger.LogInformation("Fetched product {product.Id}", product.Id);
+            var response = _mapper.Map<ProductResponseDto>(product);
+            return Ok(response);
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch product");
             throw;
@@ -77,23 +79,24 @@ public class ProductController : ControllerBase
     [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        try 
+        try
         {
-        var product = await _productService.GetProductByIdAsync(id);
-        if (product == null)
-        {
-            _logger.LogError("No product with id {product.Id} was found", product!.Id);
-            return NotFound();
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product == null)
+            {
+                _logger.LogError("No product with id {product.Id} was found", product!.Id);
+                return NotFound();
+            }
+
+            var delete = await _productService.DeleteAsync(product);
+            _logger.LogInformation("Deleted product {product.Id} successfully!", product.Id);
+
+            var response = _mapper.Map<ProductResponseDto>(delete);
+
+            return Ok(response);
+
         }
-
-        var delete = await _productService.DeleteAsync(product);
-        _logger.LogInformation("Deleted product {product.Id} successfully!", product.Id);
-
-        var response = _mapper.Map<ProductResponseDto>(delete);
-        
-        return Ok(response);
-
-        } catch (Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to delete product");
             throw;
@@ -103,23 +106,62 @@ public class ProductController : ControllerBase
     [HttpGet("category/{id}")]
     public async Task<IActionResult> GetByCategory(Guid id)
     {
-        try 
+        try
         {
-         var categoryExist = await _categoryService.GetByIdAsync(id);
-        if (categoryExist == null)
-        {
-            _logger.LogError($"Category {id} does not exist");
-            return NotFound();
+            var categoryExist = await _categoryService.GetByIdAsync(id);
+            if (categoryExist == null)
+            {
+                _logger.LogError($"Category {id} does not exist");
+                return NotFound();
+            }
+            var products = await _productService.GetByCategoryAsync(id);
+            _logger.LogInformation("Fetch products from category {id}", id);
+            var response = _mapper.Map<List<ProductResponseDto>>(products);
+            return Ok(response);
+
         }
-        var products = await _productService.GetByCategoryAsync(id);
-        _logger.LogInformation("Fetch products from category {id}", id);
-        var response = _mapper.Map<List<ProductResponseDto>>(products);
-        return Ok(response);
-        
-        } catch (Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch products from category {id}", id);
             throw;
         }
+    }
+
+    [HttpPut("update/{productId}")]
+    public async Task<IActionResult> updateAsync(Guid productId, UpdateProductDto request)
+    {
+        try
+        {
+            var existingProduct = await _productService.GetProductByIdAsync(productId);
+        if (existingProduct == null)
+        {
+            _logger.LogError($"Product {productId} not found.");
+            return NotFound();
+        }
+
+        await _productService.UpdateAsync(productId,request);
+        _logger.LogInformation("updated product {product.Id}", existingProduct.Id);
+
+        
+        return Ok( new ProductResponseDto
+        {
+            Id = existingProduct.Id,
+            Name = request.Name,
+            Description = request.Description,
+            Price = request.Price,
+            IsAvailable = request.IsAvailable,
+            StockQuantity = request.StockQuantity,
+            CategoryId = request.CategoryId,
+            CreatedAt = existingProduct.CreatedAt,
+            UpdatedAt = DateTime.UtcNow
+        });
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update product {product.Id}", productId);
+            throw;
+        }
+
+
+
     }
 }

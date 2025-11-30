@@ -39,8 +39,8 @@ public class ProductService : IProductService
 
        var response = _mapper.Map<ProductResponseDto>(product);
        return response;
-        }
-        catch (Exception ex)
+
+        }catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to add product {productName}", addProductDto.Name);
             throw;
@@ -63,11 +63,9 @@ public class ProductService : IProductService
 
     public async Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId)
     {
-        // var category = _categoryService.GetByIdAsync(categoryId) ?? throw new ArgumentException($"Category {categoryId} wasn't found.");
         var products = await _productRepository.GetProductsByCategoryAsync(categoryId);
         _logger.LogInformation("Fetch products from category {categoryId}", categoryId);
         return products;
-
     }
 
     public Task<IEnumerable<ProductResponseDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
@@ -98,9 +96,22 @@ public class ProductService : IProductService
         throw new NotImplementedException();
     }
 
-    public Task<ProductResponseDto> UpdateAsync(UpdateProductDto updateProductDto)
+    public async Task<Product> UpdateAsync(Guid id, UpdateProductDto request)
     {
-        throw new NotImplementedException();
+        var existingProduct = await _productRepository.GetByIdAsync(id)
+         ?? throw new ArgumentException($"Product {id} not found");
+
+      
+          existingProduct.Name = request.Name;
+          existingProduct.Description = request.Description;
+          existingProduct.Price = request.Price;
+          existingProduct.IsAvailable = request.IsAvailable;
+          existingProduct.StockQuantity = request.StockQuantity;
+          existingProduct.CategoryId = request.CategoryId;
+
+          await _productRepository.UpdateAsync(existingProduct);
+          return existingProduct;
+          
     }
 
     public Task UpdateStockAsync(Guid productId, int amount)
