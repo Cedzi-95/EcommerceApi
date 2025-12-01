@@ -28,7 +28,7 @@ public interface IProductService
     Task<IEnumerable<ProductResponseDto>> SearchAync(string Keyword);
     Task<(IEnumerable<ProductResponseDto> Products, int TotalCount)>GetFilteredPagedAsync
     (string? search, Guid? categoryId, int page, int pageSize);
-    Task<IEnumerable<ProductResponseDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice);
+    Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice);
     Task UpdateStockAsync(Guid productId, int amount);
 
 

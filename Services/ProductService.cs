@@ -68,9 +68,12 @@ public class ProductService : IProductService
         return products;
     }
 
-    public Task<IEnumerable<ProductResponseDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
+    public async Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
     {
-        throw new NotImplementedException();
+       var products =  await _productRepository.GetByPriceRangeAsync(minPrice, maxPrice);
+       _logger.LogInformation($"found products {products.Count()} between {minPrice} and {maxPrice}");
+
+       return products;
     }
 
     public Task<(IEnumerable<ProductResponseDto> Products, int TotalCount)> GetFilteredPagedAsync(string? search, Guid? categoryId, int page, int pageSize)

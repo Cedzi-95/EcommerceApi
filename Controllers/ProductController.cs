@@ -128,7 +128,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("update/{productId}")]
-    public async Task<IActionResult> updateAsync(Guid productId, UpdateProductDto request)
+    public async Task<IActionResult> UpdateAsync(Guid productId, UpdateProductDto request)
     {
         try
         {
@@ -161,7 +161,37 @@ public class ProductController : ControllerBase
             throw;
         }
 
+    }
 
 
+    [HttpGet("range")]
+    public async Task<IActionResult> PriceRangeAsync([FromQuery] decimal minPrice, decimal maxPrice)
+    {
+        try
+        {
+            
+        var products = await _productService.GetByPriceRangeAsync(minPrice, maxPrice);
+        _logger.LogInformation("Fetched products by price range");
+        
+       var response = products.Select(p => new ProductResponseDto
+       {
+            Id = p.Id,
+           Name = p.Name,
+           Description = p.Description,
+           Price = p.Price,
+           IsAvailable = p.IsAvailable,
+           StockQuantity = p.StockQuantity,
+           CategoryId = p.CategoryId,
+           CreatedAt = p.CreatedAt,
+           UpdatedAt = p.UpdatedAt
+       }).ToList();
+
+       return Ok(response);
+
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch products");
+            throw;
+        }
     }
 }

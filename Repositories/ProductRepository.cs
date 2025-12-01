@@ -12,9 +12,12 @@ public class ProductRepository : EfRepository<Product>, IProductRepository
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
+    public async Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
     {
-        throw new NotImplementedException();
+        var products = await _context.Products
+        .Where(p => p.Price <= maxPrice && p.Price >= minPrice)
+        .ToListAsync();
+        return products;
     }
 
     public Task<(IEnumerable<Product> Products, int TotalCount)> GetFilteredPagedAsync(string? search, Guid? categoryId, int page, int pageSize)
