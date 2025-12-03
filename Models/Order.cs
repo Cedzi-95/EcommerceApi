@@ -4,19 +4,32 @@ using System.Security.Cryptography.X509Certificates;
 public class Order
 {   
     public Guid Id { get; set; }
-    public DateTime OrderAt { get; set; }
-    public double Payment { get; set; }
-    [ForeignKey("userId")]
+    public DateTime OrderedAt { get; set; }
+    public decimal Payment { get; set; }
     public Guid UserId { get; set; }
-    public Guid ProductId { get; set; }
+    public UserEntity? Customer { get; set;}
+    public Status OrderStatus { get; set; } 
+    public PaymentStatus PaymentStatus { get; set; }
+    public ICollection<OrderItem>? OrderItems { get; set; }
+    
     
 }
 
 
+public class OrderItem
+{
+    public Guid OrderId { get; set; }
+    public Order? Order { get; set; }
+    public Guid ProductId { get; set; }
+    public Product? Product { get; set; }
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+}
+
 public enum Status
 {
     PENDING,
-    COMFIRMED,
+    CONFIRMED,
     PROCESSING,
     SHIPPED,
     DELIVERED,

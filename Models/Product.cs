@@ -19,7 +19,6 @@ public class Product
     [Required]
     [Range(0, int.MaxValue, ErrorMessage ="Stock can't have negative value")]
     public bool IsAvailable { get; set; } = true;
-    [ForeignKey("CategoryId")]
     public int StockQuantity { get; set; }
     public Guid CategoryId { get; set; }
     public Category? Category { get; set; }
@@ -27,6 +26,8 @@ public class Product
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
+    public ICollection<OrderItem>? OrderItems { get; set; }
+
 }
 
 public class ProductImage
