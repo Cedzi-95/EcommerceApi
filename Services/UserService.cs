@@ -7,9 +7,9 @@ public interface IUserService
     public Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request);
     public Task<string> LoginUserAsync(LoginRequestDto request);
     public Task<IEnumerable<UserEntity>> GetAllAsync();
-    public Task<UserEntity> GetByIdAsync(string userId);
-    public Task<UserEntity> DeleteAsync(string userId);
-    public Task AssignRoleAsync(string userId, string roleName);
+    public Task<UserEntity> GetByIdAsync(Guid userId);
+    public Task<UserEntity> DeleteAsync(Guid userId);
+    public Task AssignRoleAsync(Guid userId, string roleName);
 }
 
 
@@ -34,9 +34,9 @@ public class UserService : IUserService
         this.signInManager = signInManager;
         this.roleManager = roleManager;
     }
-    public async Task<UserEntity> DeleteAsync(string userId)
+    public async Task<UserEntity> DeleteAsync(Guid userId)
     {
-        var user = await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("user not found");
+        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("user not found");
         var result = await userManager.DeleteAsync(user!);
         if (result.Succeeded)
         {
@@ -51,9 +51,9 @@ public class UserService : IUserService
         return await userManager.Users.ToListAsync();
     }
 
-    public async Task<UserEntity> GetByIdAsync(string userId)
+    public async Task<UserEntity> GetByIdAsync(Guid userId)
     {
-        return await userManager.FindByIdAsync(userId) ?? throw new ArgumentException("User not found");
+        return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
     }
 
 
@@ -79,9 +79,9 @@ public class UserService : IUserService
 
     }
 
-    public async Task AssignRoleAsync(string userId, string roleName)
+    public async Task AssignRoleAsync(Guid userId, string roleName)
 {
-    var user = await userManager.FindByIdAsync(userId);
+    var user = await userManager.FindByIdAsync(userId.ToString());
     if (user == null)
         throw new ArgumentException("User not found");
 

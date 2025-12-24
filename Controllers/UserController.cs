@@ -60,7 +60,7 @@ public class UserController : ControllerBase
 [HttpPost("{userId}/assign-role")]
 [ProducesResponseType(StatusCodes.Status200OK)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<IActionResult> AssignRoleAsync(string userId, [FromBody] AssignRoleDto request)
+public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignRoleDto request)
 {
     try
     {
@@ -76,7 +76,7 @@ public async Task<IActionResult> AssignRoleAsync(string userId, [FromBody] Assig
 
     [Authorize(Roles = "Admin")]
     [HttpGet("{userId}")]
-    public async Task<IActionResult> GetById(string userId)
+    public async Task<IActionResult> GetById(Guid userId)
     {
         try
         {
@@ -113,7 +113,7 @@ public async Task<IActionResult> AssignRoleAsync(string userId, [FromBody] Assig
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{userId}")]
-    public async Task<IActionResult> DeleteAsync(string userId)
+    public async Task<IActionResult> DeleteAsync(Guid userId)
     {
          try
         {
