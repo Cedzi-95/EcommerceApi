@@ -6,3 +6,10 @@ public class CartRepository : EfRepository<Cart>
 
     
 }
+
+public class CartItemRepository : EfRepository<CartItem>
+{
+    public CartItemRepository(AppDbContext context) : base(context)
+    {
+    }
+}
