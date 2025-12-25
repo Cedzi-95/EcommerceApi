@@ -1,7 +1,7 @@
 public class CreateOrderDto
 {
     public Guid UserId { get; set; }
-
+    public ICollection<OrderItemResponseDto>? OrderItems { get; set;}
 }
 
 public class OrderResponseDto

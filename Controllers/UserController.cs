@@ -100,7 +100,7 @@ public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignR
        
        try
         {
-            var result = await userService.GetByIdAsync(userId);
+            var result = await userService.GetByIdAsync(Guid.Parse(userId));
             return Ok(result);
         }
         catch (ArgumentException ex)

@@ -4,3 +4,11 @@ public class OrderRepository : EfRepository<Order>, IOrderRepository
     {
     }
 }
+
+
+public class OrderItemRepository : EfRepository<OrderItem>
+{
+    public OrderItemRepository(AppDbContext context) : base(context)
+    {
+    }
+}

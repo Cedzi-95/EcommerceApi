@@ -2,29 +2,70 @@ public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUserService _userService;
+    private readonly IProductRepository _productRepository;
+    private readonly OrderItemRepository _orderItemRepository;
+    
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(IOrderRepository orderRepository,
      IUserService userService,
+     IProductRepository productRepository,
+     OrderItemRepository orderItemRepository,
      ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _userService = userService;
+        _productRepository = productRepository;
+        _orderItemRepository = orderItemRepository;
         _logger = logger;
     }
-    public async Task<Order> CreateOrderAsync(Guid userId, CreateOrderDto request)
+    public async Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request)
     {
-        var user = await _userService.GetByIdAsync(userId);
-        if (user == null)
+       var user = await _userService.GetByIdAsync(userId);
+       if (user == null)
         {
-            _logger.LogError("User not found");
+            _logger.LogError("User was not found");
         }
-        var order = new CreateOrderDto
+
+        var order = new Order
         {
-            UserId = user!.Id
+            UserId = user!.Id,
+            OrderedAt = DateTime.UtcNow,
+            OrderStatus = Status.PENDING,
+            PaymentStatus = PaymentStatus.PENDING,
+            Payment = 0,
         };
 
-       var result = await _orderRepository.AddAsync();
+        var orderItems = new List<OrderItem>();
+        decimal totalAmount = 0;
+
+        foreach ( var itemDto in request.OrderItems!)
+        {
+            var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
+            if (product == null)
+            {
+                _logger.LogError("Product to order is not found");
+                throw new Exception("Product to order is not found");
+            }
+            var orderItem = new OrderItem
+            {
+                OrderId = order.Id,
+                ProductId = itemDto.ProductId,
+                Quantity = itemDto.Quantity,
+                UnitPrice = product.Price
+            };
+
+            orderItems.Add(orderItem);
+            totalAmount = orderItem.UnitPrice * orderItem.Quantity;
+
+            order.Payment = totalAmount;
+            order.OrderItems = orderItems;
+
+             await _orderRepository.AddAsync(order);
+
+             
+
+        }
     }
 
     public Task<IEnumerable<Order>> GetAllAsync()
