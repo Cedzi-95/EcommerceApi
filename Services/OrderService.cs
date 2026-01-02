@@ -56,30 +56,63 @@ public class OrderService : IOrderService
             };
 
             orderItems.Add(orderItem);
-            totalAmount = orderItem.UnitPrice * orderItem.Quantity;
+            totalAmount += orderItem.UnitPrice * orderItem.Quantity;
 
+        }
             order.Payment = totalAmount;
             order.OrderItems = orderItems;
 
              await _orderRepository.AddAsync(order);
 
-             
+            return  MapToDto(order);
 
+
+    }
+
+    public async Task<IEnumerable<Order>> GetAllAsync()
+    {
+        var result = await _orderRepository.GetAllAsync();
+        if (result == null)
+        {
+            _logger.LogError("Orders were not found");
         }
+        return MapToDto(result);
     }
 
-    public Task<IEnumerable<Order>> GetAllAsync()
+    public async Task<Order> GetByIdAsyn(Guid orderId)
     {
-        throw new NotImplementedException();
-    }
+       var order = await _orderRepository.GetByIdAsync(orderId);
+       if (order == null)
+        {
+            _logger.LogError("Order {order.Id} was not found", orderId);
+        }
 
-    public Task<Order> GetByIdAsyn(Guid orderId)
-    {
-        throw new NotImplementedException();
+        return MapToDto(order);
     }
 
     public Task<Order> UpdateAsync(Guid orderId)
     {
         throw new NotImplementedException();
+    }
+
+    private OrderResponseDto MapToDto(Order order)
+    {
+        return new OrderResponseDto
+        {
+            OrderId = order.Id,
+            UserId = order.UserId,
+            OrderedAt = order.OrderedAt,
+            OrderStatus = order.OrderStatus,
+            PaymentStatus = order.PaymentStatus,
+            TotalAmount = order.Payment,
+            OrderItems = order.OrderItems?.Select(oi => new OrderItemResponseDto
+            {
+                ProductId = oi.ProductId,
+                ProductName = oi.Product?.Name,
+                Quantity = oi.Quantity,
+                UnitPrice = oi.UnitPrice,
+                RowTotal = oi.Quantity * oi.UnitPrice
+            }).ToList()
+        };
     }
 }
