@@ -76,18 +76,19 @@ public class OrderService : IOrderService
         {
             _logger.LogError("Orders were not found");
         }
-        return MapToDto(result);
+        return result ?? new List<Order>();
     }
 
     public async Task<Order> GetByIdAsyn(Guid orderId)
     {
        var order = await _orderRepository.GetByIdAsync(orderId);
+       _logger.LogInformation("Fetch {Order.Id} successfully", order!.Id);
        if (order == null)
         {
             _logger.LogError("Order {order.Id} was not found", orderId);
         }
 
-        return MapToDto(order);
+        return order!;
     }
 
     public Task<Order> UpdateAsync(Guid orderId)
