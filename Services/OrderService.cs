@@ -91,6 +91,21 @@ public class OrderService : IOrderService
         return order!;
     }
 
+    public Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Order> OrderStatusAsync(Guid orderId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Order> PaymentStatusAsync(Guid OrderId)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<Order> UpdateAsync(Guid orderId)
     {
         throw new NotImplementedException();
