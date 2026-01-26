@@ -34,20 +34,3 @@ The goal of this project is to demonstrate **clean architecture**, **best practi
 
 ---
 
-##  Project Structure
-
-```text
-EcommerceApi
-│
-├── Controllers        # API endpoints
-├── Data               # DbContext & database configuration
-├── Helpers            # Authentication helpers & role seeding
-├── Interfaces         # Repository & service contracts
-├── Mappings           # AutoMapper profiles
-├── Migrations         # EF Core migrations
-├── Models             # Domain entities
-│   └── DTO            # Data Transfer Objects
-├── Repositories       # Data access layer
-├── Services           # Business logic layer
-├── Ecommerce          # Bruno API client collections
-└── Program.cs         # Application entry point
