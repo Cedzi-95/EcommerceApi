@@ -91,9 +91,25 @@ public class OrderService : IOrderService
         return order!;
     }
 
-    public Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
+    public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        var foundUser = await _userService.GetByIdAsync(userId);
+        _logger.LogInformation("Fetched user {userId}", userId);
+
+        if (foundUser == null)
+        {
+            _logger.LogError("User not found");
+        }
+
+        var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
+        _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+
+        if (order == null)
+        {
+            _logger.LogError("Order for user {userId} not found", foundUser.Id);
+        }
+        return order!;
+
     }
 
     public Task<Order> OrderStatusAsync(Guid orderId)
