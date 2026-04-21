@@ -53,7 +53,7 @@ public class Program
 
             };
         });
-        
+
         //for mapping
         builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -75,7 +75,7 @@ public class Program
 
         var app = builder.Build();
 
-         // Seed roller och admin-användare
+        // Seed roller och admin-användare
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
@@ -94,7 +94,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-             app.UseSwagger();
+            app.UseSwagger();
             app.UseSwaggerUI();
         }
 

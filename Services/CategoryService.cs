@@ -17,6 +17,14 @@ public class CategoryService
     {
         try
         {
+            if (category.ParentId.HasValue)
+            {
+                var parentExists = await _categoryRepository.GetByIdAsync(category.ParentId.Value);
+                if (parentExists == null)
+                {
+                    throw new ArgumentException($"ParentId '{category.ParentId}' does not exist");
+                }
+            }
             // Category-objektet kommer redan färdigt från controller
             await _categoryRepository.AddAsync(category);
             _logger.LogInformation("Created new category {categoryName} {categoryId}", 

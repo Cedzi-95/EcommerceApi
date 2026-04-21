@@ -1,22 +1,22 @@
-using EcommerceApi;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+// using EcommerceApi;
+// using Microsoft.EntityFrameworkCore;
+// using Microsoft.EntityFrameworkCore.Design;
 
-public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
-{
-    public AppDbContext CreateDbContext(string[] args)
-    {
-        Console.WriteLine("=== AppDbContextFactory används ===");
+// public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+// {
+//     public AppDbContext CreateDbContext(string[] args)
+//     {
+//         Console.WriteLine("=== AppDbContextFactory används ===");
         
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Program>()
-            .Build();
+//         var configuration = new ConfigurationBuilder()
+//             .AddUserSecrets<Program>()
+//             .Build();
 
-        Console.WriteLine($"=== Connection: {configuration.GetConnectionString("DefaultConnection")} ===");
+//         Console.WriteLine($"=== Connection: {configuration.GetConnectionString("DefaultConnection")} ===");
 
-        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+//         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+//         optionsBuilder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
 
-        return new AppDbContext(optionsBuilder.Options);
-    }
-}
+//         return new AppDbContext(optionsBuilder.Options);
+//     }
+// }
