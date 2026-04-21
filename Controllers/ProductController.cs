@@ -2,7 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/{controller}")]
+[Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
