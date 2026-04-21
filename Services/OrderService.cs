@@ -3,20 +3,20 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IUserService _userService;
     private readonly IProductRepository _productRepository;
-    private readonly OrderItemRepository _orderItemRepository;
+    // private readonly OrderItemRepository _orderItemRepository;
     
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(IOrderRepository orderRepository,
      IUserService userService,
      IProductRepository productRepository,
-     OrderItemRepository orderItemRepository,
+    //  OrderItemRepository orderItemRepository,
      ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _userService = userService;
         _productRepository = productRepository;
-        _orderItemRepository = orderItemRepository;
+        // _orderItemRepository = orderItemRepository;
         _logger = logger;
     }
     public async Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request)

@@ -63,6 +63,10 @@ public class Program
         builder.Services.AddScoped<CategoryService>();
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
         builder.Services.AddScoped<IProductService, ProductService>();
+        builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+        builder.Services.AddScoped<IOrderService, OrderService>();
+        builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+
 
 
         builder.Services.AddControllers();
