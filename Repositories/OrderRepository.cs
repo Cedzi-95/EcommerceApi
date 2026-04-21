@@ -9,7 +9,10 @@ public class OrderRepository : EfRepository<Order>, IOrderRepository
     public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
     {
         var order = await _context.Orders
-        .Where(o => o.UserId == userId).ToListAsync();
+        .Where(o => o.UserId == userId)
+        .Include(o => o.OrderItems!)
+        .ThenInclude(oi => oi.Product)
+        .ToListAsync();
         return order;
     }
 
@@ -22,6 +25,7 @@ public class OrderRepository : EfRepository<Order>, IOrderRepository
         if (order != null)
         {
             order.OrderStatus = newOrderStatus;
+            await UpdateAsync(order);
         }
         
 
@@ -36,15 +40,21 @@ public class OrderRepository : EfRepository<Order>, IOrderRepository
        if (order != null)
         {
             order.PaymentStatus = NewPaymentStatus;
+            await UpdateAsync(order);
         }
 
     }
 }
 
 
-public class OrderItemRepository : EfRepository<OrderItem>
+public class OrderItemRepository : EfRepository<OrderItem>, IOrderItemRepository
 {
     public OrderItemRepository(AppDbContext context) : base(context)
     {
+    }
+
+    public Task<IEnumerable<OrderItem>> GetByOrderIdAsync(Guid orderId)
+    {
+        throw new NotImplementedException();
     }
 }

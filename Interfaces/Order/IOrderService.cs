@@ -1,10 +1,3 @@
-public interface IOrderRepository : IRepository<Order>
-{
-    Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId);
-    Task OrderStatusAsync(Guid orderId, Status newOrderStatus);
-    Task PaymentStatusAsync(Guid OrderId, PaymentStatus newPaymentStatus);
-}
-
 public interface IOrderService
 {
     Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request);
