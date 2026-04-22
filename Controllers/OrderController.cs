@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -22,12 +24,13 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost("create")]
+    [Authorize]
     public async Task<IActionResult> CreateAsync([FromBody] CreateOrderDto request)
     {
         try
         {
-        var customer = await _userService.GetByIdAsync(request.UserId);
-        var order = await _orderService.CreateOrderAsync(customer.Id, request);
+        var customer = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var order = await _orderService.CreateOrderAsync(customer, request);
         _logger.LogInformation("Order confirmed");
         return Ok(order);
         }
