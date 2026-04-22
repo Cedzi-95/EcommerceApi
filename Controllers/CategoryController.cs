@@ -25,6 +25,7 @@ public class CategoryController : ControllerBase
 
     }
     [HttpPost("create")]
+    [Authorize]
     public async Task<IActionResult> CreateAsync([FromBody] CategoryDto request)
     {
 
@@ -67,6 +68,7 @@ public class CategoryController : ControllerBase
     }
 
     [HttpDelete("delete/{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
         var entity = await _categoryService.GetByIdAsync(id);

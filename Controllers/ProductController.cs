@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -26,6 +27,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("create")]
+    [Authorize]
     public async Task<IActionResult> CreateAsync([FromBody] AddProductDto request)
     {
         try
@@ -77,6 +79,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("delete/{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
         try
@@ -128,6 +131,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("update/{productId}")]
+    [Authorize]
     public async Task<IActionResult> UpdateAsync(Guid productId, UpdateProductDto request)
     {
         try
