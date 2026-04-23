@@ -22,21 +22,25 @@ public class UserService : IUserService
     private readonly UserManager<UserEntity> userManager;
     private readonly SignInManager<UserEntity> signInManager;
     private readonly  RoleManager<IdentityRole<Guid>> roleManager;
+    private readonly ILogger<UserService> _logger;
 
 
     public UserService(AuthHelpers authHelpers, 
     UserManager<UserEntity> userManager,
      SignInManager<UserEntity> signInManager,
-      RoleManager<IdentityRole<Guid>> roleManager)
+      RoleManager<IdentityRole<Guid>> roleManager,
+      ILogger<UserService> logger)
     {
         this.authHelpers = authHelpers;
         this.userManager = userManager;
         this.signInManager = signInManager;
         this.roleManager = roleManager;
+        _logger = logger;
     }
     public async Task<UserEntity> DeleteAsync(Guid userId)
     {
         var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("user not found");
+        _logger.LogInformation("Deleting user {user.Id}", user.Id);
         var result = await userManager.DeleteAsync(user!);
         if (result.Succeeded)
         {
@@ -48,12 +52,36 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserEntity>> GetAllAsync()
     {
-        return await userManager.Users.ToListAsync();
+        try 
+        {
+            var result = await userManager.Users.ToListAsync();
+            if (result == null)
+            {
+                _logger.LogWarning("Can't find users");
+                throw new ArgumentNullException();
+            }
+            _logger.LogInformation("Fetching all the users");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Somehting went wrong");
+            return null!;
+        }
     }
 
     public async Task<UserEntity> GetByIdAsync(Guid userId)
     {
-        return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
+      try
+      {
+        _logger.LogInformation("Fetching user {userId}", userId);
+          return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
+      }
+      catch(Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch user");
+            return null!;
+        }
     }
 
 
@@ -62,7 +90,8 @@ public class UserService : IUserService
         var user = await userManager.FindByEmailAsync(request.Email!);
         if (user == null)
         {
-            throw new ArgumentException("user not found");
+            _logger.LogWarning("User not found");
+            throw new ArgumentException("user not found, create an account first");
         }
         var result = await signInManager.CheckPasswordSignInAsync(
             user,
@@ -71,8 +100,10 @@ public class UserService : IUserService
             );
         if (!result.Succeeded)
         {
+            _logger.LogInformation("Invalid password or email");
             throw new ArgumentException("Invalid credentials");
         }
+        _logger.LogInformation("Successfully generated JWT token");
         var token =  await authHelpers.GenerateJWTToken(user);
         return token;
 
@@ -89,6 +120,7 @@ public class UserService : IUserService
     if (!roleExists)
         throw new ArgumentException($"Role '{roleName}' does not exist");
 
+  _logger.LogInformation("Successfully assigned role {RoleName} to user {userId}", roleName, userId);
     var result = await userManager.AddToRoleAsync(user, roleName);
     if (!result.Succeeded)
         throw new ArgumentException(string.Join(", ", result.Errors.Select(e => e.Description)));
@@ -98,7 +130,9 @@ public class UserService : IUserService
 
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
     {
-        var user = new UserEntity()
+      try
+      {
+          var user = new UserEntity()
         {
             Email = request.Email,
             UserName = request.UserName,
@@ -106,6 +140,7 @@ public class UserService : IUserService
         };
 
         var result = await userManager.CreateAsync(user, request.Password!);
+        _logger.LogInformation("Creating account for {user.UserName}", user.UserName);
 
         if (!result.Succeeded)
         {
@@ -113,7 +148,6 @@ public class UserService : IUserService
             throw new ArgumentException($"Error registering user: {erromessages}");
         }
 
-        // Ge nya användare "User" rollen
     await userManager.AddToRoleAsync(user, "User");
 
     var token = await authHelpers.GenerateJWTToken(user); 
@@ -124,6 +158,12 @@ public class UserService : IUserService
             Email = user.Email,
             Username = user.UserName
         };
+
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create account");
+            throw new ArgumentException(ex.Message, "Failed to register user");
+        }
 
 
     }
