@@ -37,7 +37,7 @@ public class OrderController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to place an order");
-            throw;
+             return BadRequest();
         }
 
     }
