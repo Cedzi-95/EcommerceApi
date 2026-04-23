@@ -29,17 +29,50 @@ public class OrderController : ControllerBase
     {
         try
         {
-        var customer = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var order = await _orderService.CreateOrderAsync(customer, request);
-        _logger.LogInformation("Order confirmed");
-        return Ok(order);
+            var customer = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var order = await _orderService.CreateOrderAsync(customer, request);
+            _logger.LogInformation("Order confirmed");
+            return Ok(order);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to place an order");
             throw;
         }
-        
 
+    }
+
+    [HttpGet("GetAll")]
+    [Authorize]
+    public async Task<IActionResult> GetAllAsync()
+    {
+        try
+        {
+            var orders = await _orderService.GetAllAsync();
+            _logger.LogInformation("Fetched all orders");
+            return Ok(orders);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch orders");
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{orderId}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdAsync(Guid orderId)
+    {
+        try
+        {
+            var order = await _orderService.GetByIdAsyn(orderId);
+            _logger.LogInformation("Fetched order {order.Id}", order.Id);
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong trying to fetch this order");
+            return BadRequest(ex.Message);
+        }
     }
 }
