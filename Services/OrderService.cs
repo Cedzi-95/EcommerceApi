@@ -71,12 +71,19 @@ public class OrderService : IOrderService
 
     public async Task<IEnumerable<Order>> GetAllAsync()
     {
-        var result = await _orderRepository.GetAllAsync();
+       try
+       { var result = await _orderRepository.GetAllAsync();
         if (result == null)
         {
             _logger.LogError("Orders were not found");
         }
         return result ?? new List<Order>();
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong while trying to fetch orders");
+            return null!;
+        }
     }
 
     public async Task<Order> GetByIdAsyn(Guid orderId)
