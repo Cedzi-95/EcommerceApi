@@ -7,10 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 public class UserController : ControllerBase
 {
     private readonly IUserService userService;
+    private readonly ILogger<UserController> _logger;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService,
+     ILogger<UserController> logger)
     {
         this.userService = userService;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -19,11 +22,13 @@ public class UserController : ControllerBase
         try
         {
             var response = await userService.RegisterUserAsync(request);
+            _logger.LogInformation("Successfully created an account");
             return Ok(response);
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message});
+            _logger.LogError(ex, "Failed to create account!");
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -32,12 +37,13 @@ public class UserController : ControllerBase
     {
         try
         {
-             var response = await userService.LoginUserAsync(request);
-        return Ok(response);
+            var response = await userService.LoginUserAsync(request);
+            _logger.LogInformation("Successfully logged in");
+            return Ok(response);
         }
-        catch(ArgumentException ex)
+        catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message});
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -48,30 +54,33 @@ public class UserController : ControllerBase
         try
         {
             var result = await userService.GetAllAsync();
+            _logger.LogInformation("Successfully fetched all users");
             return Ok(result);
         }
-        catch(ArgumentException ex)
+        catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message});
+            _logger.LogError(ex, "Failed to fetch users!");
+            return BadRequest(new { message = ex.Message });
         }
     }
 
     [Authorize(Roles = "Admin")]
-[HttpPost("{userId}/assign-role")]
-[ProducesResponseType(StatusCodes.Status200OK)]
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignRoleDto request)
-{
-    try
+    [HttpPost("{userId}/assign-role")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignRoleDto request)
     {
-        await userService.AssignRoleAsync(userId, request.RoleName);
-        return Ok(new { message = $"Role '{request.RoleName}' assigned to user {userId}" });
+        try
+        {
+            await userService.AssignRoleAsync(userId, request.RoleName);
+            return Ok(new { message = $"Role '{request.RoleName}' assigned to user {userId}" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Failed to assign role");
+            return BadRequest(new { message = ex.Message });
+        }
     }
-    catch (ArgumentException ex)
-    {
-        return BadRequest(new { message = ex.Message });
-    }
-}
 
 
     [Authorize(Roles = "Admin")]
@@ -85,7 +94,8 @@ public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignR
         }
         catch (ArgumentException ex)
         {
-            return NotFound(new { message = ex.Message});
+            _logger.LogError(ex, "Failed to fetch user {userId}", userId);
+            return NotFound(new { message = ex.Message });
         }
     }
 
@@ -94,18 +104,19 @@ public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignR
     [HttpGet("me")]
     public async Task<IActionResult> CurrentUserAsync()
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;   
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
-            return Unauthorized(); 
-       
-       try
+            return Unauthorized();
+
+        try
         {
             var result = await userService.GetByIdAsync(Guid.Parse(userId));
             return Ok(result);
         }
         catch (ArgumentException ex)
         {
-            return NotFound(new { message = ex.Message});
+            _logger.LogError(ex, "Failed to fetch current user");
+            return NotFound(new { message = ex.Message });
         }
     }
 
@@ -115,14 +126,16 @@ public async Task<IActionResult> AssignRoleAsync(Guid userId, [FromBody] AssignR
     [HttpDelete("{userId}")]
     public async Task<IActionResult> DeleteAsync(Guid userId)
     {
-         try
+        try
         {
             var result = await userService.DeleteAsync(userId);
+            _logger.LogInformation("User with ID {userId} has been deleted", userId);
             return Ok($"User with ID {userId} has been deleted");
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message});
+            _logger.LogError(ex, "Failed to delete user {userId}", userId);
+            return BadRequest(new { message = ex.Message });
         }
     }
 }
