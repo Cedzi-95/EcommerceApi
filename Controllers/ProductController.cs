@@ -27,7 +27,9 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("create")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateAsync([FromBody] AddProductDto request)
     {
         try
