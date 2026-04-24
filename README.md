@@ -3,7 +3,7 @@
 A **modern e-commerce REST API** built with **ASP.NET Core Web API** and **Entity Framework Core**.  
 This project provides the backend foundation for an online store, including products, categories, carts, orders, and user authentication.
 
-The goal of this project is to demonstrate **clean architecture**, **best practices**, and **scalable backend design** for a real-world e-commerce system.
+The goal of this project is to demonstrate **best practices**, and **scalable backend design** for a real-world e-commerce system.
 
 ---
 
