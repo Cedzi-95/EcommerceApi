@@ -67,12 +67,14 @@ public class Program
         builder.Services.AddScoped<IOrderRepository, OrderRepository>();
         builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+        builder.Services.AddScoped<ICartService, CartService>();
+        builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 
 
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        
+
         builder.Services.AddSwaggerGen(options =>
         {
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

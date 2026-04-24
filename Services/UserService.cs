@@ -65,7 +65,7 @@ public class UserService : IUserService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Somehting went wrong");
+            _logger.LogError(ex, "Something went wrong");
             return null!;
         }
     }
