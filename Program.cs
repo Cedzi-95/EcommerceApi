@@ -69,6 +69,7 @@ public class Program
         builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
         builder.Services.AddScoped<ICartService, CartService>();
         builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+        builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 
 
