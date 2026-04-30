@@ -21,11 +21,11 @@ public class UserService : IUserService
     private readonly AuthHelpers authHelpers;
     private readonly UserManager<UserEntity> userManager;
     private readonly SignInManager<UserEntity> signInManager;
-    private readonly  RoleManager<IdentityRole<Guid>> roleManager;
+    private readonly RoleManager<IdentityRole<Guid>> roleManager;
     private readonly ILogger<UserService> _logger;
 
 
-    public UserService(AuthHelpers authHelpers, 
+    public UserService(AuthHelpers authHelpers,
     UserManager<UserEntity> userManager,
      SignInManager<UserEntity> signInManager,
       RoleManager<IdentityRole<Guid>> roleManager,
@@ -39,20 +39,29 @@ public class UserService : IUserService
     }
     public async Task<UserEntity> DeleteAsync(Guid userId)
     {
-        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("user not found");
-        _logger.LogInformation("Deleting user {user.Id}", user.Id);
-        var result = await userManager.DeleteAsync(user!);
-        if (result.Succeeded)
+        try
         {
-            return null!;
+            var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("user not found");
+            _logger.LogInformation("Deleting user {user.Id}", user.Id);
+            var result = await userManager.DeleteAsync(user!);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Deleted user");
+                return null!;
+            }
+            _logger.LogError("Failed to delete user");
+            throw new Exception($"Could not delete user {user!.Id}");
         }
-        throw new Exception($"Could not delete user {user!.Id}");
-
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<UserEntity>> GetAllAsync()
     {
-        try 
+        try
         {
             var result = await userManager.Users.ToListAsync();
             if (result == null)
@@ -66,21 +75,21 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong");
-            return null!;
+            throw new ArgumentException(ex.Message);
         }
     }
 
     public async Task<UserEntity> GetByIdAsync(Guid userId)
     {
-      try
-      {
-        _logger.LogInformation("Fetching user {userId}", userId);
-          return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
-      }
-      catch(Exception ex)
+        try
+        {
+            _logger.LogInformation("Fetching user {userId}", userId);
+            return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch user");
-            return null!;
+            throw new ArgumentException(ex.Message);
         }
     }
 
@@ -104,62 +113,63 @@ public class UserService : IUserService
             throw new ArgumentException("Invalid credentials");
         }
         _logger.LogInformation("Successfully generated JWT token");
-        var token =  await authHelpers.GenerateJWTToken(user);
+        var token = await authHelpers.GenerateJWTToken(user);
         return token;
 
 
     }
 
     public async Task AssignRoleAsync(Guid userId, string roleName)
-{
-    var user = await userManager.FindByIdAsync(userId.ToString());
-    if (user == null)
-        throw new ArgumentException("User not found");
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            throw new ArgumentException("User not found");
 
-    var roleExists = await roleManager.RoleExistsAsync(roleName);
-    if (!roleExists)
-        throw new ArgumentException($"Role '{roleName}' does not exist");
+        var roleExists = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExists)
+            throw new ArgumentException($"Role '{roleName}' does not exist");
 
-  _logger.LogInformation("Successfully assigned role {RoleName} to user {userId}", roleName, userId);
-    var result = await userManager.AddToRoleAsync(user, roleName);
-    if (!result.Succeeded)
-        throw new ArgumentException(string.Join(", ", result.Errors.Select(e => e.Description)));
-}
+        _logger.LogInformation("Successfully assigned role {RoleName} to user {userId}", roleName, userId);
+        var result = await userManager.AddToRoleAsync(user, roleName);
+        if (!result.Succeeded)
+            throw new ArgumentException(string.Join(", ", result.Errors.Select(e => e.Description)));
+    }
 
 
 
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserDto request)
     {
-      try
-      {
-          var user = new UserEntity()
+        try
         {
-            Email = request.Email,
-            UserName = request.UserName,
-            PasswordHash = request.Password
-        };
+            var user = new UserEntity()
+            {
+                Email = request.Email,
+                UserName = request.UserName,
+                PasswordHash = request.Password
+            };
 
-        var result = await userManager.CreateAsync(user, request.Password!);
-        _logger.LogInformation("Creating account for {user.UserName}", user.UserName);
+            var result = await userManager.CreateAsync(user, request.Password!);
+            _logger.LogInformation("Creating account for {user.UserName}", user.UserName);
 
-        if (!result.Succeeded)
-        {
-            var erromessages = string.Join("; ", result.Errors.Select(e => e.Description));
-            throw new ArgumentException($"Error registering user: {erromessages}");
+            if (!result.Succeeded)
+            {
+                var erromessages = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new ArgumentException($"Error registering user: {erromessages}");
+            }
+
+            await userManager.AddToRoleAsync(user, "User");
+
+            var token = await authHelpers.GenerateJWTToken(user);
+
+            return new RegisterUserResponse()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.UserName
+            };
+
         }
-
-    await userManager.AddToRoleAsync(user, "User");
-
-    var token = await authHelpers.GenerateJWTToken(user); 
-
-        return new RegisterUserResponse()
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Username = user.UserName
-        };
-
-        } catch (Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create account");
             throw new ArgumentException(ex.Message, "Failed to register user");
