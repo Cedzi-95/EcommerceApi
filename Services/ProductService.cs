@@ -43,37 +43,70 @@ public class ProductService : IProductService
         }catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to add product {productName}", addProductDto.Name);
-            throw;
+            throw new ArgumentException(ex.Message);
         }
     }
 
     public async Task<Product> DeleteAsync(Product product)
     {
-       await _productRepository.DeleteAsync(product);
+        try
+      {
+         await _productRepository.DeleteAsync(product);
        _logger.LogInformation("Deleted product successfully");
       return product;
+      }
+      catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong!");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Product>> GetAllProductsAsync()
     {
-       var products = await _productRepository.GetAllAsync() ?? throw new ArgumentException("Products not found");
+      try
+      {
+         var products = await _productRepository.GetAllAsync() ?? throw new ArgumentException("Products not found");
        _logger.LogInformation("Fetched all products");
        return products;
+       } 
+       catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId)
     {
-        var products = await _productRepository.GetProductsByCategoryAsync(categoryId);
+        
+        try
+        {
+            var products = await _productRepository.GetProductsByCategoryAsync(categoryId);
         _logger.LogInformation("Fetch products from category {categoryId}", categoryId);
         return products;
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
     {
-       var products =  await _productRepository.GetByPriceRangeAsync(minPrice, maxPrice);
+       try
+       {
+        var products =  await _productRepository.GetByPriceRangeAsync(minPrice, maxPrice);
        _logger.LogInformation($"found products {products.Count()} between {minPrice} and {maxPrice}");
 
        return products;
+       }
+       catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public Task<(IEnumerable<ProductResponseDto> Products, int TotalCount)> GetFilteredPagedAsync(string? search, Guid? categoryId, int page, int pageSize)
@@ -83,10 +116,18 @@ public class ProductService : IProductService
 
     public async Task<Product> GetProductByIdAsync(Guid productId)
     {
-        var product = await _productRepository.GetByIdAsync(productId)
+        try 
+        {
+            var product = await _productRepository.GetByIdAsync(productId)
          ?? throw new ArgumentException($"Product {productId} wasnt found");
          _logger.LogInformation("Fetch product {Id}", product.Id);
          return product;
+         }
+         catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public Task<IEnumerable<ProductResponseDto>> SearchAync(string Keyword)
@@ -101,7 +142,9 @@ public class ProductService : IProductService
 
     public async Task<Product> UpdateAsync(Guid id, UpdateProductDto request)
     {
-        var existingProduct = await _productRepository.GetByIdAsync(id)
+       try
+        {
+            var existingProduct = await _productRepository.GetByIdAsync(id)
          ?? throw new ArgumentException($"Product {id} not found");
 
       
@@ -111,9 +154,15 @@ public class ProductService : IProductService
           existingProduct.IsAvailable = request.IsAvailable;
           existingProduct.StockQuantity = request.StockQuantity;
           existingProduct.CategoryId = request.CategoryId;
-
+        _logger.LogInformation("Updated product");
           await _productRepository.UpdateAsync(existingProduct);
           return existingProduct;
+          }
+          catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
           
     }
 
