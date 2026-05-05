@@ -84,7 +84,8 @@ public class UserService : IUserService
         try
         {
             _logger.LogInformation("Fetching user {userId}", userId);
-            return await userManager.FindByIdAsync(userId.ToString()) ?? throw new ArgumentException("User not found");
+            return await userManager.FindByIdAsync(userId.ToString()) 
+            ?? throw new ArgumentException("User not found");
         }
         catch (Exception ex)
         {
@@ -97,6 +98,7 @@ public class UserService : IUserService
     public async Task<string> LoginUserAsync(LoginRequestDto request)
     {
         var user = await userManager.FindByEmailAsync(request.Email!);
+
         if (user == null)
         {
             _logger.LogWarning("User not found");
@@ -122,6 +124,7 @@ public class UserService : IUserService
     public async Task AssignRoleAsync(Guid userId, string roleName)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
+
         if (user == null)
             throw new ArgumentException("User not found");
 
