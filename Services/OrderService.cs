@@ -3,83 +3,79 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IUserService _userService;
     private readonly IProductRepository _productRepository;
-    // private readonly OrderItemRepository _orderItemRepository;
-    
+    private readonly ICartRepository _cartRepository;
+
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(IOrderRepository orderRepository,
      IUserService userService,
      IProductRepository productRepository,
-    //  OrderItemRepository orderItemRepository,
+     ICartRepository cartRepository,
      ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _userService = userService;
         _productRepository = productRepository;
-        // _orderItemRepository = orderItemRepository;
+        _cartRepository = cartRepository;
         _logger = logger;
     }
     public async Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request)
     {
-       var user = await _userService.GetByIdAsync(userId);
-       if (user == null)
+       try
+       {
+         //fetch cart with items and products
+        var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+
+        if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
         {
-            _logger.LogError("User was not found");
+            _logger.LogWarning("Cart is empty or doesn´t exist");
+            throw new InvalidOperationException("Cart is empty or dows not exist");
         }
 
+        var orderItems = cart.CartItems.Select(ci => new OrderItem
+        {
+            ProductId = ci.ProductId,
+            Quantity = ci.Quantity,
+            UnitPrice = ci.Product!.Price
+        }).ToList();
         var order = new Order
         {
-            UserId = user!.Id,
-            OrderedAt = DateTime.UtcNow,
+            UserId = userId,
+            OrderItems = orderItems,
+            Payment = orderItems.Sum(i => i.UnitPrice * i.Quantity),
             OrderStatus = Status.PENDING,
             PaymentStatus = PaymentStatus.PENDING,
-            Payment = 0,
+            OrderedAt = DateTime.UtcNow
         };
 
-        var orderItems = new List<OrderItem>();
-        decimal totalAmount = 0;
+        await _orderRepository.AddAsync(order);
 
-        foreach ( var itemDto in request.OrderItems!)
-        {
-            var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
-            if (product == null)
-            {
-                _logger.LogError("Product to order is not found");
-                throw new Exception("Product to order is not found");
-            }
-            var orderItem = new OrderItem
-            {
-                OrderId = order.Id,
-                ProductId = itemDto.ProductId,
-                Quantity = itemDto.Quantity,
-                UnitPrice = product.Price
-            };
+        //Clear the cart after creating an order
+        cart.CartItems.Clear();
+        await _cartRepository.UpdateAsync(cart);
+        _logger.LogInformation("Order {OrderId} created for user {UserId}", order.Id, userId);
 
-            orderItems.Add(orderItem);
-            totalAmount += orderItem.UnitPrice * orderItem.Quantity;
-
+        return MapToDto(order);
         }
-            order.Payment = totalAmount;
-            order.OrderItems = orderItems;
-
-             await _orderRepository.AddAsync(order);
-
-            return  MapToDto(order);
-
-
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Order>> GetAllAsync()
     {
-       try
-       { var result = await _orderRepository.GetAllAsync();
-        if (result == null)
+        try
         {
-            _logger.LogError("Orders were not found");
+            var result = await _orderRepository.GetAllAsync();
+            if (result == null)
+            {
+                _logger.LogError("Orders were not found");
+            }
+            return result ?? new List<Order>();
         }
-        return result ?? new List<Order>();
-        }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong while trying to fetch orders");
             return null!;
@@ -88,9 +84,9 @@ public class OrderService : IOrderService
 
     public async Task<Order> GetByIdAsyn(Guid orderId)
     {
-       var order = await _orderRepository.GetByIdAsync(orderId);
-       _logger.LogInformation("Fetch {Order.Id} successfully", order!.Id);
-       if (order == null)
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        _logger.LogInformation("Fetch {Order.Id} successfully", order!.Id);
+        if (order == null)
         {
             _logger.LogError("Order {order.Id} was not found", orderId);
         }

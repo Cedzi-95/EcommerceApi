@@ -1,7 +1,8 @@
 public class CreateOrderDto
 {
     // public Guid UserId { get; set; }
-    public ICollection<OrderItemResponseDto>? OrderItems { get; set;}
+    // public ICollection<OrderItemResponseDto>? OrderItems { get; set;}
+    public string Address { get; set; } = string.Empty;
 }
 
 public class OrderResponseDto
