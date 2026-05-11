@@ -35,4 +35,21 @@ public class CartController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpGet("Get")]
+    [Authorize]
+    public async Task<IActionResult> GetCartAsync()
+    {
+        try
+        {
+            var user = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _cartService.GetCartAsync(user);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong fetching your cart");
+            return BadRequest(ex.Message);
+        }
+    }
 }
