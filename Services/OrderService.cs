@@ -21,41 +21,57 @@ public class OrderService : IOrderService
     }
     public async Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request)
     {
-       try
-       {
-         //fetch cart with items and products
-        var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-
-        if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+        try
         {
-            _logger.LogWarning("Cart is empty or doesn´t exist");
-            throw new InvalidOperationException("Cart is empty or dows not exist");
-        }
+            //fetch cart with items and products
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
 
-        var orderItems = cart.CartItems.Select(ci => new OrderItem
-        {
-            ProductId = ci.ProductId,
-            Quantity = ci.Quantity,
-            UnitPrice = ci.Product!.Price
-        }).ToList();
-        var order = new Order
-        {
-            UserId = userId,
-            OrderItems = orderItems,
-            Payment = orderItems.Sum(i => i.UnitPrice * i.Quantity),
-            OrderStatus = Status.PENDING,
-            PaymentStatus = PaymentStatus.PENDING,
-            OrderedAt = DateTime.UtcNow
-        };
+            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+            {
+                _logger.LogWarning("Cart is empty or doesn't exist");
+                throw new InvalidOperationException("Cart is empty or dows not exist");
+            }
 
-        await _orderRepository.AddAsync(order);
+            var orderItems = cart.CartItems.Select(ci => new OrderItem
+            {
+                ProductId = ci.ProductId,
+                Quantity = ci.Quantity,
+                UnitPrice = ci.Product!.Price
+            }).ToList();
+            var order = new Order
+            {
+                UserId = userId,
+                OrderItems = orderItems,
+                Payment = orderItems.Sum(i => i.UnitPrice * i.Quantity),
+                OrderStatus = Status.PENDING,
+                PaymentStatus = PaymentStatus.PENDING,
+                OrderedAt = DateTime.UtcNow
+            };
 
-        //Clear the cart after creating an order
-        cart.CartItems.Clear();
-        await _cartRepository.UpdateAsync(cart);
-        _logger.LogInformation("Order {OrderId} created for user {UserId}", order.Id, userId);
+            //Decrease stock quantity for each product
+            foreach (var ci in cart.CartItems)
+            {
+                var product = ci.Product!;
 
-        return MapToDto(order);
+                if (product.StockQuantity < ci.Quantity)
+                {
+                    cart.CartItems.Clear();
+                    await _cartRepository.UpdateAsync(cart);
+                    _logger.LogWarning("There are not stock for this product");
+                    throw new InvalidOperationException($"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}, Requested: {ci.Quantity}");
+                }
+                product.StockQuantity -= ci.Quantity;
+                await _productRepository.UpdateAsync(product);
+            }
+
+            await _orderRepository.AddAsync(order);
+
+            //Clear the cart after creating an order
+            cart.CartItems.Clear();
+            await _cartRepository.UpdateAsync(cart);
+            _logger.LogInformation("Order {OrderId} created for user {UserId}", order.Id, userId);
+
+            return MapToDto(order);
         }
         catch (Exception ex)
         {
