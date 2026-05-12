@@ -28,7 +28,7 @@ public class OrderService : IOrderService
 
         if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
         {
-            _logger.LogWarning("Cart is empty or doesn´t exist");
+            _logger.LogWarning("Cart is empty or doesn't exist");
             throw new InvalidOperationException("Cart is empty or dows not exist");
         }
 
@@ -47,6 +47,20 @@ public class OrderService : IOrderService
             PaymentStatus = PaymentStatus.PENDING,
             OrderedAt = DateTime.UtcNow
         };
+
+        //Decrease stock quantity for each product
+        foreach(var ci in cart.CartItems)
+            {
+                var product = ci.Product!;
+
+                if (product.StockQuantity < ci.Quantity)
+                {
+                    _logger.LogWarning("There are not stock for this product");
+                    throw new InvalidOperationException($"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}, Requested: {ci.Quantity}");
+                }
+                product.StockQuantity -= ci.Quantity;
+                await _productRepository.UpdateAsync(product);
+            }
 
         await _orderRepository.AddAsync(order);
 
