@@ -37,7 +37,7 @@ public class OrderController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to place an order");
-             return BadRequest();
+            return BadRequest();
         }
 
     }
@@ -66,13 +66,20 @@ public class OrderController : ControllerBase
         try
         {
             var order = await _orderService.GetByIdAsyn(orderId);
-            _logger.LogInformation("Fetched order {order.Id}", order.Id);
+            
+            if (order == null)
+                throw new KeyNotFoundException($"Order {orderId} not found");
+            _logger.LogInformation("Fetched order {OrderId}", order.Id);
             return Ok(order);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong trying to fetch this order");
-            return BadRequest(ex.Message);
+            return StatusCode(500, "Something went wrong");
         }
     }
 }

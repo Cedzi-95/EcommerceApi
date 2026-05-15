@@ -29,7 +29,7 @@ public class OrderService : IOrderService
             if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
             {
                 _logger.LogWarning("Cart is empty or doesn't exist");
-                throw new InvalidOperationException("Cart is empty or dows not exist");
+                throw new InvalidOperationException("Cart is empty or does not exist");
             }
 
             var orderItems = cart.CartItems.Select(ci => new OrderItem
@@ -38,6 +38,22 @@ public class OrderService : IOrderService
                 Quantity = ci.Quantity,
                 UnitPrice = ci.Product!.Price
             }).ToList();
+
+            // check the stock 
+            foreach (var ci in cart.CartItems)
+            {
+                if (ci.Product!.StockQuantity < ci.Quantity)
+                    throw new InvalidOperationException(
+                        $"Not enough stock for '{ci.Product.Name}'. Available: {ci.Product.StockQuantity}, Requested: {ci.Quantity}");
+            }
+
+            // Decrease the stock quantity
+            foreach (var ci in cart.CartItems)
+            {
+                ci.Product!.StockQuantity -= ci.Quantity;
+                await _productRepository.UpdateAsync(ci.Product);
+            }
+
             var order = new Order
             {
                 UserId = userId,
@@ -47,22 +63,6 @@ public class OrderService : IOrderService
                 PaymentStatus = PaymentStatus.PENDING,
                 OrderedAt = DateTime.UtcNow
             };
-
-            //Decrease stock quantity for each product
-            foreach (var ci in cart.CartItems)
-            {
-                var product = ci.Product!;
-
-                if (product.StockQuantity < ci.Quantity)
-                {
-                    cart.CartItems.Clear();
-                    await _cartRepository.UpdateAsync(cart);
-                    _logger.LogWarning("There are not stock for this product");
-                    throw new InvalidOperationException($"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}, Requested: {ci.Quantity}");
-                }
-                product.StockQuantity -= ci.Quantity;
-                await _productRepository.UpdateAsync(product);
-            }
 
             await _orderRepository.AddAsync(order);
 
@@ -94,41 +94,55 @@ public class OrderService : IOrderService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong while trying to fetch orders");
-            return null!;
+            throw new ArgumentException(ex.Message);
         }
     }
 
     public async Task<Order> GetByIdAsyn(Guid orderId)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId);
-        _logger.LogInformation("Fetch {Order.Id} successfully", order!.Id);
-        if (order == null)
+        try
         {
-            _logger.LogError("Order {order.Id} was not found", orderId);
-        }
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null)
+                throw new KeyNotFoundException($"Order {orderId} not found");
 
-        return order!;
+            _logger.LogInformation("Fetched order {OrderId}", order.Id);
+            return order;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
     {
-        var foundUser = await _userService.GetByIdAsync(userId);
-        _logger.LogInformation("Fetched user {userId}", userId);
-
-        if (foundUser == null)
+        try
         {
-            _logger.LogError("User not found");
+            var foundUser = await _userService.GetByIdAsync(userId);
+            _logger.LogInformation("Fetched user {userId}", userId);
+
+            if (foundUser == null)
+            {
+                _logger.LogError("User not found");
+            }
+
+            var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
+            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+
+            if (order == null)
+            {
+                _logger.LogError("Order for user {userId} not found", foundUser.Id);
+            }
+            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+            return order!;
         }
-
-        var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
-        _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
-
-        if (order == null)
+        catch (Exception ex)
         {
-            _logger.LogError("Order for user {userId} not found", foundUser.Id);
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
         }
-        return order!;
-
     }
 
     public Task<Order> OrderStatusAsync(Guid orderId)

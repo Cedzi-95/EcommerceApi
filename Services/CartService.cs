@@ -22,6 +22,14 @@ public class CartService : ICartService
             _logger.LogWarning("Product not found");
             throw new ArgumentException("Product not found");
         }
+
+        if (product.StockQuantity <= 0 || product.StockQuantity < quantity)
+        {
+            _logger.LogWarning("Not enough stock for this product");
+        throw new InvalidOperationException(
+        $"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}");
+        }
+
         var cart = await _cartRepository.GetCartByUserIdAsync(userId);
         if (cart == null)
         {
