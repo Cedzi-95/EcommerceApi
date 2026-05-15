@@ -42,7 +42,7 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to add new product");
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 
@@ -59,7 +59,7 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch products");
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 
@@ -76,7 +76,7 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch product");
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 
@@ -104,7 +104,7 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to delete product");
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 
@@ -128,7 +128,7 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch products from category {id}", id);
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 
@@ -139,32 +139,33 @@ public class ProductController : ControllerBase
         try
         {
             var existingProduct = await _productService.GetProductByIdAsync(productId);
-        if (existingProduct == null)
-        {
-            _logger.LogError($"Product {productId} not found.");
-            return NotFound();
+            if (existingProduct == null)
+            {
+                _logger.LogError($"Product {productId} not found.");
+                return NotFound();
+            }
+
+            await _productService.UpdateAsync(productId, request);
+            _logger.LogInformation("updated product {product.Id}", existingProduct.Id);
+
+
+            return Ok(new ProductResponseDto
+            {
+                Id = existingProduct.Id,
+                Name = request.Name,
+                Description = request.Description,
+                Price = request.Price,
+                IsAvailable = request.IsAvailable,
+                StockQuantity = request.StockQuantity,
+                CategoryId = request.CategoryId,
+                CreatedAt = existingProduct.CreatedAt,
+                UpdatedAt = DateTime.UtcNow
+            });
         }
-
-        await _productService.UpdateAsync(productId,request);
-        _logger.LogInformation("updated product {product.Id}", existingProduct.Id);
-
-        
-        return Ok( new ProductResponseDto
-        {
-            Id = existingProduct.Id,
-            Name = request.Name,
-            Description = request.Description,
-            Price = request.Price,
-            IsAvailable = request.IsAvailable,
-            StockQuantity = request.StockQuantity,
-            CategoryId = request.CategoryId,
-            CreatedAt = existingProduct.CreatedAt,
-            UpdatedAt = DateTime.UtcNow
-        });
-        } catch (Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to update product {product.Id}", productId);
-            throw;
+            return BadRequest(ex.Message);
         }
 
     }
@@ -175,29 +176,30 @@ public class ProductController : ControllerBase
     {
         try
         {
-            
-        var products = await _productService.GetByPriceRangeAsync(minPrice, maxPrice);
-        _logger.LogInformation("Fetched products by price range");
-        
-       var response = products.Select(p => new ProductResponseDto
-       {
-            Id = p.Id,
-           Name = p.Name,
-           Description = p.Description,
-           Price = p.Price,
-           IsAvailable = p.IsAvailable,
-           StockQuantity = p.StockQuantity,
-           CategoryId = p.CategoryId,
-           CreatedAt = p.CreatedAt,
-           UpdatedAt = p.UpdatedAt
-       }).ToList();
 
-       return Ok(response);
+            var products = await _productService.GetByPriceRangeAsync(minPrice, maxPrice);
+            _logger.LogInformation("Fetched products by price range");
 
-        } catch (Exception ex)
+            var response = products.Select(p => new ProductResponseDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                IsAvailable = p.IsAvailable,
+                StockQuantity = p.StockQuantity,
+                CategoryId = p.CategoryId,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
+            }).ToList();
+
+            return Ok(response);
+
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch products");
-            throw;
+            return BadRequest(ex.Message);
         }
     }
 }
