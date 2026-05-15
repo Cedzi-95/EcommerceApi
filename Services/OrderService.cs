@@ -103,13 +103,13 @@ public class OrderService : IOrderService
         try
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
-        if (order == null)
-            throw new KeyNotFoundException($"Order {orderId} not found");
+            if (order == null)
+                throw new KeyNotFoundException($"Order {orderId} not found");
 
-        _logger.LogInformation("Fetched order {OrderId}", order.Id);
-        return order;
+            _logger.LogInformation("Fetched order {OrderId}", order.Id);
+            return order;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong");
             throw new ArgumentException(ex.Message);
@@ -118,23 +118,31 @@ public class OrderService : IOrderService
 
     public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
     {
-        var foundUser = await _userService.GetByIdAsync(userId);
-        _logger.LogInformation("Fetched user {userId}", userId);
-
-        if (foundUser == null)
+        try
         {
-            _logger.LogError("User not found");
+            var foundUser = await _userService.GetByIdAsync(userId);
+            _logger.LogInformation("Fetched user {userId}", userId);
+
+            if (foundUser == null)
+            {
+                _logger.LogError("User not found");
+            }
+
+            var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
+            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+
+            if (order == null)
+            {
+                _logger.LogError("Order for user {userId} not found", foundUser.Id);
+            }
+            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+            return order!;
         }
-
-        var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
-        _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
-
-        if (order == null)
+        catch (Exception ex)
         {
-            _logger.LogError("Order for user {userId} not found", foundUser.Id);
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
         }
-        return order!;
-
     }
 
     public Task<Order> OrderStatusAsync(Guid orderId)
