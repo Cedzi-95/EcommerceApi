@@ -94,20 +94,26 @@ public class OrderService : IOrderService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong while trying to fetch orders");
-            return null!;
+            throw new ArgumentException(ex.Message);
         }
     }
 
     public async Task<Order> GetByIdAsyn(Guid orderId)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId);
-        _logger.LogInformation("Fetch {Order.Id} successfully", order!.Id);
-        if (order == null)
+        try
         {
-            _logger.LogError("Order {order.Id} was not found", orderId);
-        }
+            var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null)
+            throw new KeyNotFoundException($"Order {orderId} not found");
 
-        return order!;
+        _logger.LogInformation("Fetched order {OrderId}", order.Id);
+        return order;
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
