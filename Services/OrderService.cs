@@ -29,7 +29,7 @@ public class OrderService : IOrderService
             if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
             {
                 _logger.LogWarning("Cart is empty or doesn't exist");
-                throw new InvalidOperationException("Cart is empty or dows not exist");
+                throw new InvalidOperationException("Cart is empty or does not exist");
             }
 
             var orderItems = cart.CartItems.Select(ci => new OrderItem
@@ -38,6 +38,22 @@ public class OrderService : IOrderService
                 Quantity = ci.Quantity,
                 UnitPrice = ci.Product!.Price
             }).ToList();
+
+            // check the stock 
+            foreach (var ci in cart.CartItems)
+            {
+                if (ci.Product!.StockQuantity < ci.Quantity)
+                    throw new InvalidOperationException(
+                        $"Not enough stock for '{ci.Product.Name}'. Available: {ci.Product.StockQuantity}, Requested: {ci.Quantity}");
+            }
+
+            // Decrease the stock quantity
+            foreach (var ci in cart.CartItems)
+            {
+                ci.Product!.StockQuantity -= ci.Quantity;
+                await _productRepository.UpdateAsync(ci.Product);
+            }
+
             var order = new Order
             {
                 UserId = userId,
@@ -47,22 +63,6 @@ public class OrderService : IOrderService
                 PaymentStatus = PaymentStatus.PENDING,
                 OrderedAt = DateTime.UtcNow
             };
-
-            //Decrease stock quantity for each product
-            foreach (var ci in cart.CartItems)
-            {
-                var product = ci.Product!;
-
-                if (product.StockQuantity < ci.Quantity)
-                {
-                    cart.CartItems.Clear();
-                    await _cartRepository.UpdateAsync(cart);
-                    _logger.LogWarning("There are not stock for this product");
-                    throw new InvalidOperationException($"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}, Requested: {ci.Quantity}");
-                }
-                product.StockQuantity -= ci.Quantity;
-                await _productRepository.UpdateAsync(product);
-            }
 
             await _orderRepository.AddAsync(order);
 
