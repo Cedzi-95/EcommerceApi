@@ -69,7 +69,7 @@ public class OrderController : ControllerBase
             
             if (order == null)
                 throw new KeyNotFoundException($"Order {orderId} not found");
-            _logger.LogInformation("Fetched order {OrderId}", order.Id);
+            _logger.LogInformation("Fetched order {OrderId}", orderId);
             return Ok(order);
         }
         catch (KeyNotFoundException ex)
