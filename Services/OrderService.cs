@@ -116,7 +116,7 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
+    public async Task<IEnumerable<OrderResponseDto>> GetOrdersByUserAsync(Guid userId)
     {
         try
         {
@@ -126,17 +126,13 @@ public class OrderService : IOrderService
             if (foundUser == null)
             {
                 _logger.LogError("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
-            var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
-            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
+            var orders = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
 
-            if (order == null)
-            {
-                _logger.LogError("Order for user {userId} not found", foundUser.Id);
-            }
-            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
-            return order!;
+            _logger.LogInformation("Found {count} orders for user {userId} ", orders.Count(), foundUser.Id);
+            return orders.Select(o => MapToDto(o));
         }
         catch (Exception ex)
         {
@@ -145,12 +141,29 @@ public class OrderService : IOrderService
         }
     }
 
-    public Task<Order> OrderStatusAsync(Guid orderId)
+    public async Task OrderStatusAsync(Guid orderId, Status newOrderStatus)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                _logger.LogWarning("Order not found");
+                throw new KeyNotFoundException($"Order {orderId} not found");
+
+            }
+            await _orderRepository.OrderStatusAsync(orderId, newOrderStatus);
+
+            _logger.LogInformation("Updated order {OrderId} to status {Status}", orderId, newOrderStatus);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
-    public Task<Order> PaymentStatusAsync(Guid OrderId)
+    public Task PaymentStatusAsync(Guid OrderId, PaymentStatus status)
     {
         throw new NotImplementedException();
     }
