@@ -15,6 +15,13 @@ public class OrderRepository : EfRepository<Order>, IOrderRepository
         .ToListAsync();
         return order;
     }
+     public override async Task<Order?> GetByIdAsync(Guid id)
+    {
+        return await _context.Orders
+            .Include(o => o.OrderItems!)
+                .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id);
+    }
 
     public async Task OrderStatusAsync(Guid orderId, Status newOrderStatus)
     {

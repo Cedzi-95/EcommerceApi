@@ -98,7 +98,7 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<Order> GetByIdAsyn(Guid orderId)
+    public async Task<OrderResponseDto> GetByIdAsyn(Guid orderId)
     {
         try
         {
@@ -107,7 +107,7 @@ public class OrderService : IOrderService
                 throw new KeyNotFoundException($"Order {orderId} not found");
 
             _logger.LogInformation("Fetched order {OrderId}", order.Id);
-            return order;
+            return MapToDto(order);
         }
         catch (Exception ex)
         {
