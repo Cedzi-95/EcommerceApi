@@ -130,7 +130,7 @@ public class OrderService : IOrderService
             }
 
             var orders = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
-            
+
             _logger.LogInformation("Found {count} orders for user {userId} ", orders.Count(), foundUser.Id);
             return orders.Select(o => MapToDto(o));
         }
@@ -141,12 +141,29 @@ public class OrderService : IOrderService
         }
     }
 
-    public Task<Order> OrderStatusAsync(Guid orderId)
+    public async Task OrderStatusAsync(Guid orderId, Status newOrderStatus)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                _logger.LogWarning("Order not found");
+                throw new KeyNotFoundException($"Order {orderId} not found");
+
+            }
+            await _orderRepository.OrderStatusAsync(orderId, newOrderStatus);
+
+            _logger.LogInformation("Updated order {OrderId} to status {Status}", orderId, newOrderStatus);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
-    public Task<Order> PaymentStatusAsync(Guid OrderId)
+    public Task PaymentStatusAsync(Guid OrderId, PaymentStatus status)
     {
         throw new NotImplementedException();
     }

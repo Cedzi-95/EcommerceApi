@@ -5,6 +5,6 @@ public interface IOrderService
     Task<OrderResponseDto> GetByIdAsyn(Guid orderId);
     Task<Order> UpdateAsync(Guid orderId);
     Task<IEnumerable<OrderResponseDto>> GetOrdersByUserAsync(Guid userId);
-    Task<Order> OrderStatusAsync(Guid orderId);
-    Task<Order> PaymentStatusAsync(Guid OrderId);
+    Task OrderStatusAsync(Guid orderId, Status newOrderStatus);
+    Task PaymentStatusAsync(Guid OrderId, PaymentStatus paymentStatus);
 }

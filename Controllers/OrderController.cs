@@ -66,7 +66,7 @@ public class OrderController : ControllerBase
         try
         {
             var order = await _orderService.GetByIdAsyn(orderId);
-            
+
             if (order == null)
                 throw new KeyNotFoundException($"Order {orderId} not found");
             _logger.LogInformation("Fetched order {OrderId}", orderId);
@@ -90,8 +90,8 @@ public class OrderController : ControllerBase
         try
         {
             var user = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-           var result = await _orderService.GetOrdersByUserAsync(user);
-           return Ok(result);
+            var result = await _orderService.GetOrdersByUserAsync(user);
+            return Ok(result);
         }
         catch (KeyNotFoundException ex)
         {
@@ -103,4 +103,26 @@ public class OrderController : ControllerBase
             return StatusCode(500, "Something went wrong");
         }
     }
+
+    [HttpPut("OrderStatus")]
+    [Authorize]
+    public async Task<IActionResult> OrderStatusAsync([FromQuery] Guid orderId, Status status)
+    {
+        try
+        {
+            await _orderService.OrderStatusAsync(orderId, status);
+            return Ok($"Order status updated to {status}");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            return StatusCode(500, "Something went wrong");
+        }
+    }
+
+
 }
