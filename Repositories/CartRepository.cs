@@ -13,6 +13,7 @@ public class CartRepository : EfRepository<Cart>, ICartRepository
             .ThenInclude(ci => ci.Product)
             .FirstOrDefaultAsync(c => c.UserId == userId);
     }
+
 }
 
 public class CartItemRepository : EfRepository<CartItem>, ICartItemRepository

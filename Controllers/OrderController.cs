@@ -124,5 +124,25 @@ public class OrderController : ControllerBase
         }
     }
 
+     [HttpPut("PaymentStatus")]
+    [Authorize]
+    public async Task<IActionResult> PaymentStatusAsync([FromQuery] Guid orderId, PaymentStatus status)
+    {
+        try
+        {
+            await _orderService.PaymentStatusAsync(orderId, status);
+            return Ok($"Order paymentstatus updated to {status}");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            return StatusCode(500, "Something went wrong");
+        }
+    }
+
 
 }
