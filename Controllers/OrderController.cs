@@ -82,4 +82,25 @@ public class OrderController : ControllerBase
             return StatusCode(500, "Something went wrong");
         }
     }
+
+    [HttpGet("my-orders")]
+    [Authorize]
+    public async Task<IActionResult> GetOrdersByUserAsync()
+    {
+        try
+        {
+            var user = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+           var result = await _orderService.GetOrdersByUserAsync(user);
+           return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            return StatusCode(500, "Something went wrong");
+        }
+    }
 }

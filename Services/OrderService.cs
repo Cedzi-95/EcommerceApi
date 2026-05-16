@@ -116,7 +116,7 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<IEnumerable<Order>> GetOrdersByUserAsync(Guid userId)
+    public async Task<IEnumerable<OrderResponseDto>> GetOrdersByUserAsync(Guid userId)
     {
         try
         {
@@ -126,17 +126,13 @@ public class OrderService : IOrderService
             if (foundUser == null)
             {
                 _logger.LogError("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
-            var order = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
-            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
-
-            if (order == null)
-            {
-                _logger.LogError("Order for user {userId} not found", foundUser.Id);
-            }
-            _logger.LogInformation("Fetching orders for user {userId}", foundUser.Id);
-            return order!;
+            var orders = await _orderRepository.GetOrdersByUserAsync(foundUser!.Id);
+            
+            _logger.LogInformation("Found {count} orders for user {userId} ", orders.Count(), foundUser.Id);
+            return orders.Select(o => MapToDto(o));
         }
         catch (Exception ex)
         {
