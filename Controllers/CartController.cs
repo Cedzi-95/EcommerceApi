@@ -52,4 +52,26 @@ public class CartController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpDelete("remove/{productId}")]
+    [Authorize]
+    public async Task<IActionResult> RemoveItemAsync(Guid productId, [FromQuery] int quantity = 1)
+    {
+        try
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            await _cartService.RemoveItemAsync(userId, productId, quantity);
+            return Ok("Item removed from cart");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to remove item from cart");
+            return StatusCode(500, "Something went wrong");
+        }
+    }
 }
+

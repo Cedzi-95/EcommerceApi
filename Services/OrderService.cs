@@ -163,9 +163,24 @@ public class OrderService : IOrderService
         }
     }
 
-    public Task PaymentStatusAsync(Guid OrderId, PaymentStatus status)
+    public async Task PaymentStatusAsync(Guid OrderId, PaymentStatus paymentstatus)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var order = await _orderRepository.GetByIdAsync(OrderId);
+            if (order == null)
+            {
+                _logger.LogWarning("Order not found");
+                throw new KeyNotFoundException();
+            }
+            await _orderRepository.PaymentStatusAsync(OrderId, paymentstatus);
+            _logger.LogInformation("Update order {OrderId} to payment status {status}", OrderId, paymentstatus);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Something went wrong");
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public Task<Order> UpdateAsync(Guid orderId)

@@ -14,55 +14,55 @@ public class CartService : ICartService
     }
     public async Task<CartResponseDto> AddToCartAsync(Guid userId, Guid productId, int quantity)
     {
-       try
+        try
         {
             var product = await _productRepository.GetByIdAsync(productId);
-        if (product == null)
-        {
-            _logger.LogWarning("Product not found");
-            throw new ArgumentException("Product not found");
-        }
-
-        if (product.StockQuantity <= 0 || product.StockQuantity < quantity)
-        {
-            _logger.LogWarning("Not enough stock for this product");
-        throw new InvalidOperationException(
-        $"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}");
-        }
-
-        var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-        if (cart == null)
-        {
-            // create new cart if user doesnt have one
-            cart = new Cart { UserId = userId };
-            _logger.LogInformation("Create new cart for user {userId}", userId);
-        }
-
-        var existingItem = cart.CartItems?
-        .FirstOrDefault(ci => ci.ProductId == productId);
-
-        if (existingItem != null)
-        {
-            // increase quantity if product exists already in the cart
-            existingItem.Quantity += quantity;
-            await _cartRepository.UpdateAsync(cart);
-            _logger.LogInformation("Added product in cart");
-        }
-        else
-        {
-            var cartItem = new CartItem
+            if (product == null)
             {
-                CartId = cart.Id,
-                ProductId = productId,
-                Quantity = quantity
-            };
-            cart.CartItems?.Add(cartItem);
-            await _cartRepository.UpdateAsync(cart);
+                _logger.LogWarning("Product not found");
+                throw new ArgumentException("Product not found");
+            }
+
+            if (product.StockQuantity <= 0 || product.StockQuantity < quantity)
+            {
+                _logger.LogWarning("Not enough stock for this product");
+                throw new InvalidOperationException(
+                $"Not enough stock for '{product.Name}'. Available: {product.StockQuantity}");
+            }
+
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            if (cart == null)
+            {
+                // create new cart if user doesnt have one
+                cart = new Cart { UserId = userId };
+                _logger.LogInformation("Create new cart for user {userId}", userId);
+            }
+
+            var existingItem = cart.CartItems?
+            .FirstOrDefault(ci => ci.ProductId == productId);
+
+            if (existingItem != null)
+            {
+                // increase quantity if product exists already in the cart
+                existingItem.Quantity += quantity;
+                await _cartRepository.UpdateAsync(cart);
+                _logger.LogInformation("Added product in cart");
+            }
+            else
+            {
+                var cartItem = new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = productId,
+                    Quantity = quantity
+                };
+                cart.CartItems?.Add(cartItem);
+                await _cartRepository.UpdateAsync(cart);
+            }
+            _logger.LogInformation("Successfully created new cart");
+            return MapToDto(cart);
         }
-        _logger.LogInformation("Successfully created new cart");
-        return MapToDto(cart);
-        }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to Add new Cart");
             throw new ArgumentException(ex.Message);
@@ -76,29 +76,42 @@ public class CartService : ICartService
 
     public async Task<CartResponseDto> GetCartAsync(Guid userId)
     {
-       
-       try 
-       {
-         var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-        _logger.LogInformation("Fetching Cart for user {userId}", userId);
-        if (cart == null)
+
+        try
         {
-            _logger.LogWarning("Cart not found");
-            throw new ArgumentException("Cart not found");
-        }
-        return MapToDto(cart);
+            var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+            _logger.LogInformation("Fetching Cart for user {userId}", userId);
+            if (cart == null)
+            {
+                _logger.LogWarning("Cart not found");
+                throw new ArgumentException("Cart not found");
+            }
+            return MapToDto(cart);
         }
 
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Could not fetch cart");
             throw new ArgumentException(ex.Message);
         }
     }
 
-    public Task RemoveItemAsync(Guid userId, Guid cartItemId)
+    public async Task RemoveItemAsync(Guid userId, Guid productId, int quantity)
     {
-        throw new NotImplementedException();
+        var cart = await _cartRepository.GetCartByUserIdAsync(userId);
+        if (cart == null)
+            throw new KeyNotFoundException("Cart not found");
+
+        var item = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
+        if (item == null)
+            throw new KeyNotFoundException("Product not found in cart");
+
+        if (item.Quantity <= quantity)
+            cart.CartItems!.Remove(item);
+        else
+            item.Quantity -= quantity;
+
+        await _cartRepository.UpdateAsync(cart);
     }
 
     private CartResponseDto MapToDto(Cart cart)
