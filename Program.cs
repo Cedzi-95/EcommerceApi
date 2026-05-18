@@ -133,8 +133,8 @@ public class Program
         }
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
+        // if (app.Environment.IsDevelopment())
+        // {
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -142,7 +142,7 @@ public class Program
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "E-Commerce API V1");
                 c.RoutePrefix = string.Empty;
             });
-        }
+        // }
 
         app.UseHttpsRedirection();
         app.UseAuthentication();
