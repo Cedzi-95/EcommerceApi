@@ -123,7 +123,7 @@ public class Program
             {
                 policy.WithOrigins(
                     "http://localhost:3000",
-                    "https://din-vercel-url.vercel.app"
+                    "https://e-commerce-frontend-lemon-seven.vercel.app"
                 )
                 .AllowAnyHeader()
                 .AllowAnyMethod();
