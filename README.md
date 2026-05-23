@@ -46,7 +46,7 @@ This project demonstrates backend development best practices including clean arc
 
 - **API Hosting:** Azure App Service (Linux)
 - **Database:** Supabase PostgreSQL (Session Pooler)
-- **CI/CD:** GitHub Actions — auto-deploys on push to `main`
+- **CI/CD:** GitHub Actions -> auto-deploys on push to `main`
 - **Environment config:** Azure App Service Environment Variables
 
 ---
