@@ -1,10 +1,6 @@
 using System.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
-public interface IEmailService
-{
-    Task SendOrderConfirmationAsync(string toEmail, OrderResponseDto order);
-}
 
 public class EmailService : IEmailService
 {
