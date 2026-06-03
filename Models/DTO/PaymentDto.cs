@@ -12,5 +12,5 @@ public class PaymentIntentResponseDto
 public class ConfirmOrderPaymentDto
 {
     public Guid OrderId { get; set; }
-    public string PaymentIntent { get; set; } = string.Empty;
+    public string PaymentIntentId { get; set; } = string.Empty;
 }

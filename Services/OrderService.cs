@@ -4,19 +4,21 @@ public class OrderService : IOrderService
     private readonly IUserService _userService;
     private readonly IProductRepository _productRepository;
     private readonly ICartRepository _cartRepository;
-
+    private readonly IEmailService _emailService;
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(IOrderRepository orderRepository,
      IUserService userService,
      IProductRepository productRepository,
      ICartRepository cartRepository,
+     IEmailService emailService,
      ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _userService = userService;
         _productRepository = productRepository;
         _cartRepository = cartRepository;
+        _emailService = emailService;
         _logger = logger;
     }
     public async Task<OrderResponseDto> CreateOrderAsync(Guid userId, CreateOrderDto request)
@@ -65,6 +67,11 @@ public class OrderService : IOrderService
             };
 
             await _orderRepository.AddAsync(order);
+
+            //send confirmation email
+            var user = await _userService.GetByIdAsync(userId);
+            await _emailService.SendOrderConfirmationAsync(user.Email!, MapToDto(order));
+            _logger.LogInformation("Send confirmation email to {user.Email}", user.Email);
 
             //Clear the cart after creating an order
             cart.CartItems.Clear();
@@ -176,7 +183,7 @@ public class OrderService : IOrderService
             await _orderRepository.PaymentStatusAsync(OrderId, paymentstatus);
             _logger.LogInformation("Update order {OrderId} to payment status {status}", OrderId, paymentstatus);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Something went wrong");
             throw new ArgumentException(ex.Message);
