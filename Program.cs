@@ -71,6 +71,8 @@ public class Program
         builder.Services.AddScoped<ICartService, CartService>();
         builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
         builder.Services.AddScoped<ICartRepository, CartRepository>();
+        builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 
