@@ -30,9 +30,12 @@ public class ProductRepository : EfRepository<Product>, IProductRepository
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Product>> GetOutOfStockProductsAsync()
+    public async Task<IEnumerable<Product>> GetOutOfStockProductsAsync()
     {
-        throw new NotImplementedException();
+        return await _context.Set<Product>()
+        .Where(p => p.StockQuantity == 0)
+        .OrderBy(p => p.Name)
+        .ToListAsync();
     }
 
     public Task<IEnumerable<Product>> GetPagedAsync(int pageNumber, int pageSize)
