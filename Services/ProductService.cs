@@ -167,8 +167,21 @@ public class ProductService : IProductService
 
     }
 
-    public Task UpdateStockAsync(Guid productId, int amount)
+    public async Task UpdateStockAsync(Guid productId, int amount)
     {
-        throw new NotImplementedException();
+        var product = await _productRepository.GetByIdAsync(productId);
+
+        if (product == null)
+            throw new KeyNotFoundException("Product not found.");
+
+        product.StockQuantity += amount;
+
+        if (product.StockQuantity < 0)
+            throw new InvalidOperationException("Stock cannot be negative.");
+
+        product.IsAvailable = product.StockQuantity > 0;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        await _productRepository.UpdateAsync(product);
     }
 }
