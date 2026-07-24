@@ -51,9 +51,12 @@ public class ProductRepository : EfRepository<Product>, IProductRepository
         .ToListAsync();
     }
 
-    public Task<IEnumerable<Product>> GetProductsOrderedByPriceAsync(bool ascending)
+    public async Task<IEnumerable<Product>> GetProductsOrderedByPriceAsync(bool ascending)
     {
-        throw new NotImplementedException();
+       return await (ascending 
+        ? _context.Set<Product>().OrderBy(p => p.Price) 
+        : _context.Set<Product>().OrderByDescending(p => p.Price))
+        .ToListAsync();
     }
 
     public Task<IEnumerable<Product>> GetRelatedProductsAsync(Guid productId, int count)
