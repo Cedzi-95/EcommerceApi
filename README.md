@@ -8,7 +8,7 @@ This project demonstrates backend development best practices including clean arc
 
 ##  Live Demo
 
-**API (Swagger):**ecommerceapi-cedzi-exc2b8bmckb6gfcx.swedencentral-01.azurewebsites.net
+**API (Swagger):** [ecommerceapi-cedzi-exc2b8bmckb6gfcx.swedencentral-01.azurewebsites.net](https://ecommerceapi-cedzi-exc2b8bmckb6gfcx.swedencentral-01.azurewebsites.net/index.html)
 
 ---
 
