@@ -136,9 +136,37 @@ public class ProductService : IProductService
         throw new NotImplementedException();
     }
 
-    public Task<bool> SoftDeleteAsync(Guid productId)
+    public async Task<bool> SoftDeleteAsync(Guid productId)
     {
-        throw new NotImplementedException();
+       try
+    {
+        var product =  await _productRepository.GetByIdAsync(productId);
+        if (product == null)
+        {
+            _logger.LogWarning("Attempted to soft delete non-existent product {ProductId}", productId);
+            return false;
+        }
+
+        if (product.IsDeleted)
+        {
+            _logger.LogInformation("Product {ProductId} is already soft deleted", productId);
+            return true;
+        }
+
+        product.IsDeleted = true;
+        product.DeletedAt = DateTime.UtcNow;
+        product.IsAvailable = false;
+
+        await _productRepository.UpdateAsync(product);
+        _logger.LogInformation("Soft deleted product {ProductId}", productId);
+
+        return true;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to soft delete product {ProductId}", productId);
+        throw new ArgumentException(ex.Message);
+    }
     }
 
     public async Task<Product> UpdateAsync(Guid id, UpdateProductDto request)
